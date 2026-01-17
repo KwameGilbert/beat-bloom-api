@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Environment files
+# .env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+
+# Build output
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Test
+*.test.js.snap
+
+# Temp files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Uploads (if stored locally)
+uploads/
+.env
