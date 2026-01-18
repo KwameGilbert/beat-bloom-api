@@ -121,7 +121,7 @@ export const parsePagination = (query, defaults = { page: 1, limit: 20 }) => {
 export const parseSort = (
   query,
   allowedFields = [],
-  defaults = { field: 'created_at', order: 'desc' }
+  defaults = { field: 'createdAt', order: 'desc' }
 ) => {
   let field = query.sort_by || query.sortBy || defaults.field;
   let order = (query.sort_order || query.sortOrder || defaults.order).toLowerCase();

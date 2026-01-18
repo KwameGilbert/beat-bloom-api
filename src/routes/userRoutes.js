@@ -7,32 +7,35 @@ import { authenticate, requireRole } from '../middlewares/auth.js';
 const router = Router();
 
 /**
- * User Management Routes
- * All routes require authentication and admin role
+ * User Management Routes (Admin only)
+ * Base path: /api/v1/users
+ *
+ * These routes are for admin management of users.
+ * Regular users manage their own profile via /auth/me
  */
 
 /**
  * @route GET /users
- * @desc List users
- * @access Admin
+ * @desc List users with pagination
+ * @access Admin only
  */
 router.get(
   '/',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateQuery(userSchemas.listQuery),
   UserController.list
 );
 
 /**
  * @route POST /users
- * @desc Create a new user
- * @access Admin
+ * @desc Create a new user (admin creation)
+ * @access Admin only
  */
 router.post(
   '/',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateBody(userSchemas.create),
   UserController.create
 );
@@ -40,12 +43,12 @@ router.post(
 /**
  * @route GET /users/:id
  * @desc Get user by ID
- * @access Admin
+ * @access Admin only
  */
 router.get(
   '/:id',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateParams(userSchemas.params),
   UserController.getById
 );
@@ -53,25 +56,25 @@ router.get(
 /**
  * @route PATCH /users/:id
  * @desc Update user
- * @access Admin
+ * @access Admin only
  */
 router.patch(
   '/:id',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validate({ params: userSchemas.params, body: userSchemas.update }),
   UserController.update
 );
 
 /**
  * @route DELETE /users/:id
- * @desc Delete user
- * @access Admin
+ * @desc Delete user (soft delete)
+ * @access Admin only
  */
 router.delete(
   '/:id',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateParams(userSchemas.params),
   UserController.delete
 );
@@ -79,12 +82,12 @@ router.delete(
 /**
  * @route POST /users/:id/restore
  * @desc Restore deleted user
- * @access Admin
+ * @access Admin only
  */
 router.post(
   '/:id/restore',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateParams(userSchemas.params),
   UserController.restore
 );
@@ -92,12 +95,12 @@ router.post(
 /**
  * @route PATCH /users/:id/role
  * @desc Update user role
- * @access Super Admin only
+ * @access Admin only
  */
 router.patch(
   '/:id/role',
   authenticate,
-  requireRole('super_admin'),
+  requireRole('admin'),
   validate({ params: userSchemas.params, body: userSchemas.updateRole }),
   UserController.updateRole
 );
@@ -105,12 +108,12 @@ router.patch(
 /**
  * @route POST /users/:id/activate
  * @desc Activate user
- * @access Admin
+ * @access Admin only
  */
 router.post(
   '/:id/activate',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateParams(userSchemas.params),
   UserController.activate
 );
@@ -118,12 +121,12 @@ router.post(
 /**
  * @route POST /users/:id/deactivate
  * @desc Deactivate user
- * @access Admin
+ * @access Admin only
  */
 router.post(
   '/:id/deactivate',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateParams(userSchemas.params),
   UserController.deactivate
 );
@@ -131,12 +134,12 @@ router.post(
 /**
  * @route POST /users/:id/suspend
  * @desc Suspend user
- * @access Admin
+ * @access Admin only
  */
 router.post(
   '/:id/suspend',
   authenticate,
-  requireRole('admin', 'super_admin'),
+  requireRole('admin'),
   validateParams(userSchemas.params),
   UserController.suspend
 );
