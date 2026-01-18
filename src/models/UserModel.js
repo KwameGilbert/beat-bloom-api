@@ -2,16 +2,22 @@ import { BaseModel } from './BaseModel.js';
 import { passwordHasher } from '../utils/passwordHasher.js';
 
 /**
- * User Model
+ * User Model for BeatBloom
+ * Handles user accounts with authentication
  */
 class UserModelClass extends BaseModel {
   constructor() {
     super('users', {
       timestamps: true,
+      timestampFields: {
+        created: 'createdAt',
+        updated: 'updatedAt',
+      },
       softDeletes: true,
-      searchableFields: ['email', 'first_name', 'last_name'],
-      sortableFields: ['created_at', 'updated_at', 'email', 'first_name', 'last_name'],
-      hidden: ['password_hash'],
+      softDeleteField: 'deletedAt',
+      searchableFields: ['email', 'name'],
+      sortableFields: ['createdAt', 'updatedAt', 'email', 'name'],
+      hidden: ['password'],
     });
   }
 
@@ -22,8 +28,7 @@ class UserModelClass extends BaseModel {
     const userData = { ...data };
 
     if (userData.password) {
-      userData.password_hash = await this.hashPassword(userData.password);
-      delete userData.password;
+      userData.password = await this.hashPassword(userData.password);
     }
 
     return super.create(userData);
@@ -36,8 +41,7 @@ class UserModelClass extends BaseModel {
     const userData = { ...data };
 
     if (userData.password) {
-      userData.password_hash = await this.hashPassword(userData.password);
-      delete userData.password;
+      userData.password = await this.hashPassword(userData.password);
     }
 
     return super.update(id, userData);
@@ -51,12 +55,10 @@ class UserModelClass extends BaseModel {
   }
 
   /**
-   * Find user by email including password hash
+   * Find user by email including password
    */
   async findByEmailWithPassword(email) {
-    const record = await this.query()
-      .where('email', email.toLowerCase())
-      .first();
+    const record = await this.query().where('email', email.toLowerCase()).first();
     return record;
   }
 
@@ -78,15 +80,67 @@ class UserModelClass extends BaseModel {
    * Verify user password
    */
   async verifyPassword(userId, password) {
-    const user = await this.query()
-      .where(this.primaryKey, userId)
-      .first();
+    const user = await this.query().where(this.primaryKey, userId).first();
 
-    if (!user || !user.password_hash) {
+    if (!user || !user.password) {
       return false;
     }
 
-    return this.comparePassword(password, user.password_hash);
+    return this.comparePassword(password, user.password);
+  }
+
+  /**
+   * Get user's producer profile if exists
+   */
+  async getProducerProfile(userId) {
+    const { db } = await import('../database/connection.js');
+    return db('producers').where('userId', userId).first();
+  }
+
+  /**
+   * Check if user is a producer
+   */
+  async isProducer(userId) {
+    const producer = await this.getProducerProfile(userId);
+    return !!producer;
+  }
+
+  /**
+   * Update user settings (preferences)
+   */
+  async updateSettings(userId, settings) {
+    const allowedSettings = ['emailNotifications', 'pushNotifications', 'publicProfile', 'theme'];
+
+    const safeSettings = {};
+    for (const key of allowedSettings) {
+      if (settings[key] !== undefined) {
+        safeSettings[key] = settings[key];
+      }
+    }
+
+    return this.update(userId, safeSettings);
+  }
+
+  /**
+   * Enable 2FA for user
+   */
+  async enable2FA(userId, secret, backupCodes) {
+    return this.update(userId, {
+      mfaEnabled: true,
+      mfaSecret: secret,
+      mfaBackupCodes: JSON.stringify(backupCodes),
+    });
+  }
+
+  /**
+   * Disable 2FA for user
+   */
+  async disable2FA(userId) {
+    return this.update(userId, {
+      mfaEnabled: false,
+      mfaSecret: null,
+      mfaBackupCodes: '[]',
+    });
   }
 }
 

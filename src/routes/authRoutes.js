@@ -24,23 +24,14 @@ router.post(
  * @desc Login user
  * @access Public
  */
-router.post(
-  '/login',
-  authRateLimiter,
-  validateBody(authSchemas.login),
-  AuthController.login
-);
+router.post('/login', authRateLimiter, validateBody(authSchemas.login), AuthController.login);
 
 /**
  * @route POST /auth/refresh
  * @desc Refresh access token
  * @access Public
  */
-router.post(
-  '/refresh',
-  validateBody(authSchemas.refreshToken),
-  AuthController.refreshToken
-);
+router.post('/refresh', validateBody(authSchemas.refreshToken), AuthController.refreshToken);
 
 /**
  * @route GET /auth/verify-email
@@ -81,6 +72,18 @@ router.patch(
 );
 
 /**
+ * @route PATCH /auth/settings
+ * @desc Update user settings/preferences
+ * @access Private
+ */
+router.patch(
+  '/settings',
+  authenticate,
+  validateBody(authSchemas.updateSettings),
+  AuthController.updateSettings
+);
+
+/**
  * @route POST /auth/change-password
  * @desc Change password
  * @access Private
@@ -118,7 +121,7 @@ router.post(
 
 /**
  * @route POST /auth/logout
- * @desc Logout user (blacklist token)
+ * @desc Logout user (revoke token)
  * @access Private
  */
 router.post('/logout', authenticate, AuthController.logout);

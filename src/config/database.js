@@ -34,13 +34,14 @@ const getConfig = () => {
   };
 
   // Add MySQL-specific options
-  const connection = (client === 'mysql' || client === 'mysql2')
-    ? {
-        ...baseConnection,
-        charset: 'utf8mb4',
-        timezone: 'Z',
-      }
-    : baseConnection;
+  const connection =
+    client === 'mysql' || client === 'mysql2'
+      ? {
+          ...baseConnection,
+          charset: 'utf8mb4',
+          timezone: 'Z',
+        }
+      : baseConnection;
 
   return {
     client,
@@ -77,11 +78,14 @@ export const db = knex(getConfig());
 export const testConnection = async () => {
   try {
     await db.raw('SELECT 1');
-    logger.info({
-      client: env.DB_CLIENT,
-      host: env.DB_HOST,
-      database: env.DB_NAME,
-    }, 'Database connection established successfully');
+    logger.info(
+      {
+        client: env.DB_CLIENT,
+        host: env.DB_HOST,
+        database: env.DB_NAME,
+      },
+      'Database connection established successfully'
+    );
     return true;
   } catch (error) {
     logger.error({ error: error.message }, 'Failed to connect to database');

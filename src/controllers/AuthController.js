@@ -3,7 +3,7 @@ import { ApiResponse } from '../utils/response.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
 
 /**
- * Authentication Controller
+ * Authentication Controller for BeatBloom
  */
 export class AuthController {
   /**
@@ -59,6 +59,16 @@ export class AuthController {
   });
 
   /**
+   * Update user settings/preferences
+   * PATCH /auth/settings
+   */
+  static updateSettings = asyncHandler(async (req, res) => {
+    const user = await AuthService.updateSettings(req.user.id, req.body);
+
+    return ApiResponse.success(res, user, 'Settings updated successfully');
+  });
+
+  /**
    * Change password
    * POST /auth/change-password
    */
@@ -101,7 +111,7 @@ export class AuthController {
    */
   static verifyEmail = asyncHandler(async (req, res) => {
     const { token } = req.query;
-    
+
     if (!token) {
       return ApiResponse.badRequest(res, 'Verification token is required');
     }
@@ -127,7 +137,7 @@ export class AuthController {
   });
 
   /**
-   * Logout - blacklist the token
+   * Logout - revoke the token
    * POST /auth/logout
    */
   static logout = asyncHandler(async (req, res) => {

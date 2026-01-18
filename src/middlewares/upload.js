@@ -20,20 +20,20 @@ const storage = multer.diskStorage({
  * Create upload middleware for a group
  * @param {string} group - Upload group name
  * @returns {multer} Multer instance
- * 
+ *
  * @example
  * router.post('/upload', upload('products').single('file'), handler);
  */
 export const upload = (group = 'general') => {
   const config = getGroupConfig(group);
-  
+
   return multer({
     storage,
     limits: { fileSize: config.maxSize },
     fileFilter: (req, file, cb) => {
       // If types is null, allow all
       if (!config.types) return cb(null, true);
-      
+
       if (config.types.includes(file.mimetype)) {
         cb(null, true);
       } else {

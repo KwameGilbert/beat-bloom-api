@@ -10,7 +10,7 @@ class EmailService {
     this.transporter = null;
     this.from = env.EMAIL_FROM || `${env.APP_NAME} <noreply@example.com>`;
     this.isConfigured = !!(env.EMAIL_HOST && env.EMAIL_USER);
-    
+
     if (this.isConfigured) {
       this.transporter = nodemailer.createTransport({
         host: env.EMAIL_HOST,
@@ -44,7 +44,7 @@ class EmailService {
         html,
         text,
       });
-      
+
       logger.info({ to, subject }, 'Email sent');
       return { success: true, messageId: result.messageId };
     } catch (error) {
@@ -58,7 +58,7 @@ class EmailService {
    */
   async sendVerificationEmail(to, name, token) {
     const url = `${env.APP_URL || 'http://localhost:3000'}/api/${env.API_VERSION}/auth/verify-email?token=${token}`;
-    
+
     return this.send({
       to,
       subject: `Verify your email - ${env.APP_NAME}`,
@@ -79,7 +79,7 @@ class EmailService {
    */
   async sendPasswordResetEmail(to, name, token) {
     const url = `${env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-    
+
     return this.send({
       to,
       subject: `Reset your password - ${env.APP_NAME}`,

@@ -26,14 +26,7 @@ export const authenticate = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
 
-    // Check if token is blacklisted
-    const tokenSvc = await getTokenService();
-    const isBlacklisted = await tokenSvc.isBlacklisted(token);
-    
-    if (isBlacklisted) {
-      throw new UnauthorizedError('Token has been invalidated');
-    }
-
+    // Verify token
     const decoded = jwt.verify(token, env.JWT_SECRET);
 
     // Attach user to request
@@ -64,20 +57,13 @@ export const optionalAuth = async (req, res, next) => {
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
-      
-      // Check blacklist
-      const tokenSvc = await getTokenService();
-      const isBlacklisted = await tokenSvc.isBlacklisted(token);
-      
-      if (!isBlacklisted) {
-        const decoded = jwt.verify(token, env.JWT_SECRET);
+      const decoded = jwt.verify(token, env.JWT_SECRET);
 
-        req.user = {
-          id: decoded.sub || decoded.id,
-          email: decoded.email,
-          role: decoded.role,
-        };
-      }
+      req.user = {
+        id: decoded.sub || decoded.id,
+        email: decoded.email,
+        role: decoded.role,
+      };
     }
 
     next();
@@ -107,26 +93,18 @@ export const requireRole = (...allowedRoles) => {
 };
 
 /**
- * Require any of the specified permissions
+ * Require user to be a producer
  */
-export const requirePermission = (...requiredPermissions) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return next(new UnauthorizedError('Authentication required'));
-    }
+export const requireProducer = async (req, res, next) => {
+  if (!req.user) {
+    return next(new UnauthorizedError('Authentication required'));
+  }
 
-    const userPermissions = req.user.permissions || [];
+  if (req.user.role !== 'producer' && req.user.role !== 'admin') {
+    return next(new ForbiddenError('Only producers can perform this action'));
+  }
 
-    const hasPermission = requiredPermissions.some((perm) =>
-      userPermissions.includes(perm)
-    );
-
-    if (!hasPermission) {
-      return next(new ForbiddenError('Insufficient permissions'));
-    }
-
-    next();
-  };
+  next();
 };
 
 /**
@@ -139,7 +117,7 @@ export const requireOwnership = (getResourceOwnerId) => {
     }
 
     // Admins can access any resource
-    if (req.user.role === 'admin' || req.user.role === 'super_admin') {
+    if (req.user.role === 'admin') {
       return next();
     }
 
@@ -169,7 +147,7 @@ export const requireVerifiedEmail = async (req, res, next) => {
   const { UserModel } = await import('../models/UserModel.js');
   const user = await UserModel.findById(req.user.id);
 
-  if (!user || !user.email_verified_at) {
+  if (!user || !user.emailVerifiedAt) {
     return next(new ForbiddenError('Please verify your email address first'));
   }
 
@@ -211,7 +189,7 @@ export default {
   authenticate,
   optionalAuth,
   requireRole,
-  requirePermission,
+  requireProducer,
   requireOwnership,
   requireVerifiedEmail,
   generateTokens,

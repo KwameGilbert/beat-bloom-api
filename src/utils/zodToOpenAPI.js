@@ -18,31 +18,31 @@ export class ZodToOpenAPI {
     switch (typeName) {
       case 'ZodString':
         return this.convertString(zodSchema);
-      
+
       case 'ZodNumber':
         return this.convertNumber(zodSchema);
-      
+
       case 'ZodBoolean':
         return { type: 'boolean' };
-      
+
       case 'ZodDate':
         return { type: 'string', format: 'date-time' };
-      
+
       case 'ZodEnum':
         return {
           type: 'string',
           enum: zodSchema._def.values,
         };
-      
+
       case 'ZodObject':
         return this.convertObject(zodSchema);
-      
+
       case 'ZodArray':
         return {
           type: 'array',
           items: this.convert(zodSchema._def.type),
         };
-      
+
       case 'ZodOptional':
       case 'ZodNullable':
         const innerSchema = this.convert(zodSchema._def.innerType);
@@ -50,17 +50,17 @@ export class ZodToOpenAPI {
           innerSchema.nullable = true;
         }
         return innerSchema;
-      
+
       case 'ZodDefault':
         const defaultSchema = this.convert(zodSchema._def.innerType);
         defaultSchema.default = zodSchema._def.defaultValue();
         return defaultSchema;
-      
+
       case 'ZodUnion':
         return {
-          oneOf: zodSchema._def.options.map(opt => this.convert(opt)),
+          oneOf: zodSchema._def.options.map((opt) => this.convert(opt)),
         };
-      
+
       default:
         return { type: 'string' };
     }
@@ -132,7 +132,7 @@ export class ZodToOpenAPI {
 
     for (const [key, value] of Object.entries(shape)) {
       properties[key] = this.convert(value);
-      
+
       // Check if field is required
       if (!this.isOptional(value)) {
         required.push(key);

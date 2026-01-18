@@ -13,11 +13,14 @@ const startServer = async () => {
 
     // Start HTTP server
     const server = app.listen(env.PORT, env.HOST, () => {
-      logger.info({
-        port: env.PORT,
-        host: env.HOST,
-        env: env.NODE_ENV,
-      }, `🚀 ${env.APP_NAME} is running`);
+      logger.info(
+        {
+          port: env.PORT,
+          host: env.HOST,
+          env: env.NODE_ENV,
+        },
+        `🚀 ${env.APP_NAME} is running`
+      );
 
       logger.info(`📍 API available at http://${env.HOST}:${env.PORT}/api/${env.API_VERSION}`);
       logger.info(`❤️  Health check at http://${env.HOST}:${env.PORT}/health`);
@@ -61,7 +64,6 @@ const startServer = async () => {
     process.on('unhandledRejection', (reason, promise) => {
       logger.error({ reason, promise }, 'Unhandled promise rejection');
     });
-
   } catch (error) {
     logger.fatal({ error: error.message }, 'Failed to start server');
     process.exit(1);

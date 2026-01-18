@@ -13,7 +13,7 @@ class UploadService {
   constructor() {
     this.isCloudinary = env.UPLOAD_STRATEGY === 'cloudinary';
     this.baseDir = path.join(process.cwd(), env.UPLOAD_LOCAL_PATH || 'uploads');
-    
+
     if (this.isCloudinary) {
       cloudinary.v2.config({
         cloud_name: env.CLOUDINARY_CLOUD_NAME,
@@ -21,7 +21,7 @@ class UploadService {
         api_secret: env.CLOUDINARY_API_SECRET,
       });
     }
-    
+
     this.ensureDir(this.baseDir);
   }
 
@@ -36,7 +36,9 @@ class UploadService {
 
   cleanup(filePath) {
     if (filePath && fs.existsSync(filePath)) {
-      try { fs.unlinkSync(filePath); } catch {}
+      try {
+        fs.unlinkSync(filePath);
+      } catch {}
     }
   }
 
@@ -46,7 +48,7 @@ class UploadService {
    * @param {string} group - Upload group (creates folder: uploads/group/)
    * @param {object} options - Optional settings
    * @returns {Promise<object>} Upload result
-   * 
+   *
    * @example
    * const result = await uploadService.upload(req.file, 'products');
    */
@@ -83,7 +85,7 @@ class UploadService {
    * Upload multiple files
    */
   async uploadMany(files, group = 'general', options = {}) {
-    return Promise.all(files.map(f => this.upload(f, group, options)));
+    return Promise.all(files.map((f) => this.upload(f, group, options)));
   }
 
   async uploadToLocal(file, group) {

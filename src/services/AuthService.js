@@ -11,7 +11,7 @@ import {
 import { env } from '../config/env.js';
 
 /**
- * Authentication Service
+ * Authentication Service for BeatBloom
  * Handles user authentication, registration, and account management
  */
 export class AuthService {
@@ -19,7 +19,7 @@ export class AuthService {
    * Register a new user
    */
   static async register(data) {
-    const { email, password, first_name, last_name, role = 'user' } = data;
+    const { email, password, name, role = 'artist' } = data;
 
     // Check if user already exists
     const existingUser = await UserModel.findByEmail(email);
@@ -31,19 +31,24 @@ export class AuthService {
     const user = await UserModel.create({
       email: email.toLowerCase(),
       password,
-      first_name,
-      last_name,
-      role,
+      name,
+      role, // 'producer', 'artist', or 'admin'
       status: 'active',
-      email_verified_at: null,
+      avatar: null,
+      emailVerifiedAt: null,
+      emailNotifications: true,
+      pushNotifications: false,
+      publicProfile: true,
+      theme: 'dark',
     });
 
     // Generate verification token and send email
     const { token: verificationToken } = await tokenService.createVerificationToken(user.id);
-    
+
     // Send verification email (non-blocking)
-    emailService.sendVerificationEmail(user.email, user.first_name, verificationToken)
-      .catch(err => console.error('Failed to send verification email:', err.message));
+    emailService
+      .sendVerificationEmail(user.email, user.name, verificationToken)
+      .catch((err) => console.error('Failed to send verification email:', err.message));
 
     // Generate auth tokens
     const tokenPayload = {
@@ -54,8 +59,16 @@ export class AuthService {
 
     const tokens = generateTokens(tokenPayload);
 
+    // Store refresh token
+    if (tokens.refreshToken) {
+      await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
+    }
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
     return {
-      user,
+      user: userWithoutPassword,
       ...tokens,
       message: 'Registration successful. Please check your email to verify your account.',
     };
@@ -65,7 +78,7 @@ export class AuthService {
    * Login a user
    */
   static async login(email, password) {
-    // Find user with password hash
+    // Find user with password
     const user = await UserModel.findByEmailWithPassword(email.toLowerCase());
 
     if (!user) {
@@ -77,7 +90,7 @@ export class AuthService {
     }
 
     // Verify password
-    const isValidPassword = await UserModel.comparePassword(password, user.password_hash);
+    const isValidPassword = await UserModel.comparePassword(password, user.password);
 
     if (!isValidPassword) {
       throw new UnauthorizedError('Invalid email or password');
@@ -85,7 +98,7 @@ export class AuthService {
 
     // Update last login
     await UserModel.update(user.id, {
-      last_login_at: new Date(),
+      lastLoginAt: new Date(),
     });
 
     // Generate tokens
@@ -97,8 +110,13 @@ export class AuthService {
 
     const tokens = generateTokens(tokenPayload);
 
-    // Remove password hash from response
-    const { password_hash, ...userWithoutPassword } = user;
+    // Store refresh token
+    if (tokens.refreshToken) {
+      await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
+    }
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -110,23 +128,9 @@ export class AuthService {
    * Logout user - invalidate the token
    */
   static async logout(accessToken, refreshToken = null) {
-    // Calculate token expiration (decode without verifying)
-    const tokenParts = accessToken.split('.');
-    if (tokenParts.length === 3) {
-      try {
-        const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
-        const expiresAt = new Date(payload.exp * 1000);
-        
-        // Blacklist access token
-        await tokenService.blacklistToken(accessToken, expiresAt);
-        
-        // Blacklist refresh token if provided
-        if (refreshToken) {
-          await tokenService.blacklistToken(refreshToken, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
-        }
-      } catch (e) {
-        // Ignore decode errors
-      }
+    // Blacklist refresh token if provided
+    if (refreshToken) {
+      await tokenService.revokeRefreshToken(refreshToken);
     }
 
     return true;
@@ -136,9 +140,9 @@ export class AuthService {
    * Refresh access token
    */
   static async refreshToken(refreshToken) {
-    // Check if token is blacklisted
-    const isBlacklisted = await tokenService.isBlacklisted(refreshToken);
-    if (isBlacklisted) {
+    // Check if token is valid
+    const isValid = await tokenService.isRefreshTokenValid(refreshToken);
+    if (!isValid) {
       throw new UnauthorizedError('Token has been invalidated');
     }
 
@@ -152,6 +156,12 @@ export class AuthService {
       };
 
       const tokens = generateTokens(tokenPayload);
+
+      // Revoke old refresh token and store new one
+      await tokenService.revokeRefreshToken(refreshToken);
+      if (tokens.refreshToken) {
+        await tokenService.storeRefreshToken(tokenPayload.id, tokens.refreshToken);
+      }
 
       return tokens;
     } catch (error) {
@@ -170,8 +180,8 @@ export class AuthService {
     }
 
     // Update user
-    const user = await UserModel.update(tokenRecord.user_id, {
-      email_verified_at: new Date(),
+    const user = await UserModel.update(tokenRecord.userId, {
+      emailVerifiedAt: new Date(),
     });
 
     if (!user) {
@@ -179,8 +189,9 @@ export class AuthService {
     }
 
     // Send welcome email
-    emailService.sendWelcomeEmail(user.email, user.first_name)
-      .catch(err => console.error('Failed to send welcome email:', err.message));
+    emailService
+      .sendWelcomeEmail(user.email, user.name)
+      .catch((err) => console.error('Failed to send welcome email:', err.message));
 
     return user;
   }
@@ -196,18 +207,18 @@ export class AuthService {
       return true;
     }
 
-    if (user.email_verified_at) {
+    if (user.emailVerifiedAt) {
       throw new BadRequestError('Email is already verified');
     }
 
     // Invalidate old tokens
-    await tokenService.invalidateUserTokens(user.id, 'email_verification');
+    await tokenService.invalidateUserTokens(user.id, 'emailVerification');
 
     // Generate new token
     const { token: verificationToken } = await tokenService.createVerificationToken(user.id);
 
     // Send email
-    await emailService.sendVerificationEmail(user.email, user.first_name, verificationToken);
+    await emailService.sendVerificationEmail(user.email, user.name, verificationToken);
 
     return true;
   }
@@ -223,15 +234,19 @@ export class AuthService {
     }
 
     const user = await UserModel.findById(userId);
-    
+
     await UserModel.update(userId, {
       password: newPassword,
     });
 
+    // Revoke all refresh tokens (logout everywhere)
+    await tokenService.revokeAllUserRefreshTokens(userId);
+
     // Send notification email
     if (user) {
-      emailService.sendPasswordChangedEmail(user.email, user.first_name)
-        .catch(err => console.error('Failed to send password changed email:', err.message));
+      emailService
+        .sendPasswordChangedEmail(user.email, user.name)
+        .catch((err) => console.error('Failed to send password changed email:', err.message));
     }
 
     return true;
@@ -252,7 +267,7 @@ export class AuthService {
     const { token: resetToken } = await tokenService.createPasswordResetToken(user.id);
 
     // Send email
-    await emailService.sendPasswordResetEmail(user.email, user.first_name, resetToken);
+    await emailService.sendPasswordResetEmail(user.email, user.name, resetToken);
 
     return true;
   }
@@ -267,7 +282,7 @@ export class AuthService {
       throw new BadRequestError('Invalid or expired reset token');
     }
 
-    const user = await UserModel.findById(tokenRecord.user_id);
+    const user = await UserModel.findById(tokenRecord.userId);
 
     if (!user) {
       throw new NotFoundError('User not found');
@@ -277,9 +292,13 @@ export class AuthService {
       password: newPassword,
     });
 
+    // Revoke all refresh tokens
+    await tokenService.revokeAllUserRefreshTokens(user.id);
+
     // Send notification
-    emailService.sendPasswordChangedEmail(user.email, user.first_name)
-      .catch(err => console.error('Failed to send password changed email:', err.message));
+    emailService
+      .sendPasswordChangedEmail(user.email, user.name)
+      .catch((err) => console.error('Failed to send password changed email:', err.message));
 
     return true;
   }
@@ -294,7 +313,13 @@ export class AuthService {
       throw new NotFoundError('User not found');
     }
 
-    return user;
+    // Get producer profile if exists
+    const producerProfile = await UserModel.getProducerProfile(userId);
+
+    return {
+      ...user,
+      producer: producerProfile || null,
+    };
   }
 
   /**
@@ -302,7 +327,7 @@ export class AuthService {
    */
   static async updateProfile(userId, data) {
     // Prevent updating sensitive fields
-    const { password, role, status, email_verified_at, ...safeData } = data;
+    const { password, role, status, emailVerifiedAt, mfaEnabled, mfaSecret, ...safeData } = data;
 
     const user = await UserModel.update(userId, safeData);
 
@@ -311,6 +336,13 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  /**
+   * Update user settings/preferences
+   */
+  static async updateSettings(userId, settings) {
+    return UserModel.updateSettings(userId, settings);
   }
 }
 

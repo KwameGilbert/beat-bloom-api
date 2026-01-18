@@ -139,7 +139,7 @@ export class AutoDocsGenerator {
    */
   static generateResponses(route) {
     const responses = {
-      '200': {
+      200: {
         description: 'Successful operation',
         content: {
           'application/json': {

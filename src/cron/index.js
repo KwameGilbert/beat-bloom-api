@@ -20,21 +20,25 @@ export const registerJob = (name, schedule, handler, options = {}) => {
     return;
   }
 
-  const job = cron.schedule(schedule, async () => {
-    const startTime = Date.now();
-    logger.info({ job: name }, 'Starting scheduled job');
+  const job = cron.schedule(
+    schedule,
+    async () => {
+      const startTime = Date.now();
+      logger.info({ job: name }, 'Starting scheduled job');
 
-    try {
-      await handler();
-      const duration = Date.now() - startTime;
-      logger.info({ job: name, duration }, 'Job completed successfully');
-    } catch (error) {
-      logger.error({ job: name, error: error.message }, 'Job failed');
+      try {
+        await handler();
+        const duration = Date.now() - startTime;
+        logger.info({ job: name, duration }, 'Job completed successfully');
+      } catch (error) {
+        logger.error({ job: name, error: error.message }, 'Job failed');
+      }
+    },
+    {
+      scheduled: options.autoStart !== false,
+      timezone: options.timezone || 'UTC',
     }
-  }, {
-    scheduled: options.autoStart !== false,
-    timezone: options.timezone || 'UTC',
-  });
+  );
 
   jobRegistry.set(name, {
     job,
@@ -143,7 +147,7 @@ export const cleanupDeletedRecords = async () => {
 export const cleanupTokens = async () => {
   const { tokenService } = await import('../services/TokenService.js');
   const result = await tokenService.cleanup();
-  
+
   if (result.deletedTokens > 0 || result.deletedBlacklist > 0) {
     logger.info(result, 'Cleaned up token tables');
   }
@@ -173,4 +177,3 @@ export default {
   getAllJobsStatus,
   initializeJobs,
 };
-

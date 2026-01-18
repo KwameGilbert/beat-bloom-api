@@ -17,11 +17,14 @@ const envSchema = z.object({
   DB_CLIENT: z.enum(['pg', 'mysql', 'mysql2']).default('pg'),
   DATABASE_URL: z.string().url().optional(),
   DB_HOST: z.string().default('localhost'),
-  DB_PORT: z.string().transform((val) => {
-    // Default ports based on client
-    if (!val) return undefined;
-    return Number(val);
-  }).optional(),
+  DB_PORT: z
+    .string()
+    .transform((val) => {
+      // Default ports based on client
+      if (!val) return undefined;
+      return Number(val);
+    })
+    .optional(),
   DB_NAME: z.string().default('app_db'),
   DB_USER: z.string().default('postgres'),
   DB_PASSWORD: z.string().default(''),
@@ -55,7 +58,7 @@ const envSchema = z.object({
   UPLOAD_MAX_IMAGE_SIZE: z.string().default('5242880').transform(Number), // 5MB
   UPLOAD_MAX_DOCUMENT_SIZE: z.string().default('10485760').transform(Number), // 10MB
   UPLOAD_MAX_VIDEO_SIZE: z.string().default('52428800').transform(Number), // 50MB
-  
+
   // Cloudinary (optional, only needed if using cloudinary)
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),

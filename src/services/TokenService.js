@@ -1,209 +1,180 @@
-import { db } from '../config/database.js';
-import { logger } from '../config/logger.js';
 import crypto from 'crypto';
+import { db } from '../database/connection.js';
 
 /**
  * Token Service
- * Handles token generation, verification, and blacklisting
- * Uses database for persistence (works without Redis)
+ * Manages auth tokens, verification tokens, and token blacklisting
  */
-class TokenService {
-  constructor() {
-    this.tableName = 'tokens';
-    this.blacklistTable = 'token_blacklist';
-  }
-
-  // ============ TOKEN GENERATION ============
-
-  /**
-   * Generate a random token
-   * @param {number} length - Token length in bytes (default 32)
-   * @returns {string} Hex-encoded token
-   */
-  generateToken(length = 32) {
-    return crypto.randomBytes(length).toString('hex');
-  }
-
-  /**
-   * Generate a token with expiration
-   * @param {string} type - Token type (verification, reset, etc.)
-   * @param {string} userId - User ID
-   * @param {number} expiresInMinutes - Expiration time in minutes
-   * @returns {Promise<object>} Token data
-   */
-  async createToken(type, userId, expiresInMinutes = 60) {
-    const token = this.generateToken();
-    const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
-
-    await db(this.tableName).insert({
-      id: crypto.randomUUID(),
-      user_id: userId,
-      type,
-      token,
-      expires_at: expiresAt,
-      created_at: new Date(),
-    });
-
-    logger.debug({ type, userId }, 'Token created');
-
-    return {
-      token,
-      expiresAt,
-    };
-  }
-
-  /**
-   * Verify and consume a token
-   * @param {string} type - Token type
-   * @param {string} token - Token string
-   * @returns {Promise<object|null>} Token data if valid
-   */
-  async verifyToken(type, token) {
-    const record = await db(this.tableName)
-      .where({ type, token })
-      .where('expires_at', '>', new Date())
-      .whereNull('used_at')
-      .first();
-
-    if (!record) {
-      return null;
-    }
-
-    // Mark token as used
-    await db(this.tableName)
-      .where({ id: record.id })
-      .update({ used_at: new Date() });
-
-    logger.debug({ type, userId: record.user_id }, 'Token verified and consumed');
-
-    return record;
-  }
-
-  /**
-   * Invalidate all tokens of a type for a user
-   */
-  async invalidateUserTokens(userId, type = null) {
-    let query = db(this.tableName).where({ user_id: userId });
-    
-    if (type) {
-      query = query.where({ type });
-    }
-
-    await query.update({ used_at: new Date() });
-    
-    logger.debug({ userId, type }, 'User tokens invalidated');
-  }
-
-  // ============ JWT BLACKLIST ============
-
-  /**
-   * Add a JWT to the blacklist
-   * @param {string} jti - JWT ID (or token hash)
-   * @param {Date} expiresAt - When to remove from blacklist
-   */
-  async blacklistToken(token, expiresAt) {
-    const tokenHash = this.hashToken(token);
-
-    try {
-      await db(this.blacklistTable).insert({
-        id: crypto.randomUUID(),
-        token_hash: tokenHash,
-        expires_at: expiresAt,
-        created_at: new Date(),
-      });
-
-      logger.debug('JWT added to blacklist');
-    } catch (error) {
-      // Ignore duplicate errors
-      if (!error.message.includes('duplicate')) {
-        throw error;
-      }
-    }
-  }
-
-  /**
-   * Check if a JWT is blacklisted
-   * @param {string} token - JWT token
-   * @returns {Promise<boolean>} True if blacklisted
-   */
-  async isBlacklisted(token) {
-    const tokenHash = this.hashToken(token);
-
-    const record = await db(this.blacklistTable)
-      .where({ token_hash: tokenHash })
-      .first();
-
-    return !!record;
-  }
-
-  /**
-   * Hash a token for storage
-   */
-  hashToken(token) {
-    return crypto.createHash('sha256').update(token).digest('hex');
-  }
-
-  /**
-   * Clean up expired tokens and blacklist entries
-   * Call this from a cron job
-   */
-  async cleanup() {
-    const now = new Date();
-
-    // Delete expired tokens
-    const deletedTokens = await db(this.tableName)
-      .where('expires_at', '<', now)
-      .del();
-
-    // Delete expired blacklist entries
-    const deletedBlacklist = await db(this.blacklistTable)
-      .where('expires_at', '<', now)
-      .del();
-
-    if (deletedTokens > 0 || deletedBlacklist > 0) {
-      logger.info({ 
-        deletedTokens, 
-        deletedBlacklist,
-      }, 'Cleaned up expired tokens');
-    }
-
-    return { deletedTokens, deletedBlacklist };
-  }
-
-  // ============ SPECIFIC TOKEN TYPES ============
-
+class TokenServiceClass {
   /**
    * Create email verification token
    */
   async createVerificationToken(userId) {
-    return this.createToken('email_verification', userId, 24 * 60); // 24 hours
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await db('authTokens').insert({
+      userId,
+      type: 'emailVerification',
+      token,
+      expiresAt,
+    });
+
+    return { token, expiresAt };
   }
 
   /**
    * Verify email verification token
    */
   async verifyVerificationToken(token) {
-    return this.verifyToken('email_verification', token);
+    const record = await db('authTokens')
+      .where('token', token)
+      .where('type', 'emailVerification')
+      .whereNull('usedAt')
+      .where('expiresAt', '>', new Date())
+      .first();
+
+    if (record) {
+      // Mark as used
+      await db('authTokens').where('id', record.id).update({ usedAt: new Date() });
+    }
+
+    return record;
   }
 
   /**
    * Create password reset token
    */
   async createPasswordResetToken(userId) {
-    // Invalidate existing reset tokens
-    await this.invalidateUserTokens(userId, 'password_reset');
-    
-    return this.createToken('password_reset', userId, 60); // 1 hour
+    // Invalidate old tokens first
+    await this.invalidateUserTokens(userId, 'passwordReset');
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await db('authTokens').insert({
+      userId,
+      type: 'passwordReset',
+      token,
+      expiresAt,
+    });
+
+    return { token, expiresAt };
   }
 
   /**
    * Verify password reset token
    */
   async verifyPasswordResetToken(token) {
-    return this.verifyToken('password_reset', token);
+    const record = await db('authTokens')
+      .where('token', token)
+      .where('type', 'passwordReset')
+      .whereNull('usedAt')
+      .where('expiresAt', '>', new Date())
+      .first();
+
+    if (record) {
+      // Mark as used
+      await db('authTokens').where('id', record.id).update({ usedAt: new Date() });
+    }
+
+    return record;
+  }
+
+  /**
+   * Invalidate all tokens of a specific type for a user
+   */
+  async invalidateUserTokens(userId, type) {
+    await db('authTokens')
+      .where('userId', userId)
+      .where('type', type)
+      .whereNull('usedAt')
+      .update({ usedAt: new Date() });
+  }
+
+  /**
+   * Store refresh token
+   */
+  async storeRefreshToken(userId, token, deviceInfo = null, ipAddress = null) {
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    await db('refreshTokens').insert({
+      userId,
+      token,
+      deviceInfo,
+      ipAddress,
+      expiresAt,
+    });
+
+    return { expiresAt };
+  }
+
+  /**
+   * Revoke refresh token
+   */
+  async revokeRefreshToken(token) {
+    await db('refreshTokens').where('token', token).update({ isRevoked: true });
+  }
+
+  /**
+   * Check if refresh token is valid
+   */
+  async isRefreshTokenValid(token) {
+    const record = await db('refreshTokens')
+      .where('token', token)
+      .where('isRevoked', false)
+      .where('expiresAt', '>', new Date())
+      .first();
+
+    return !!record;
+  }
+
+  /**
+   * Revoke all refresh tokens for a user
+   */
+  async revokeAllUserRefreshTokens(userId) {
+    await db('refreshTokens').where('userId', userId).update({ isRevoked: true });
+  }
+
+  /**
+   * Add token to blacklist (for logout)
+   * Using refreshTokens table with isRevoked = true
+   */
+  async blacklistToken(token, expiresAt) {
+    // For simple blacklisting, we can just mark the token as revoked
+    // This works for refresh tokens; for access tokens, we verify expiry
+    try {
+      await db('refreshTokens').where('token', token).update({ isRevoked: true });
+    } catch (e) {
+      // Token might not exist in refreshTokens (could be access token)
+      // For access tokens, we don't need to blacklist - just let them expire
+    }
+  }
+
+  /**
+   * Check if token is blacklisted
+   */
+  async isBlacklisted(token) {
+    const record = await db('refreshTokens').where('token', token).where('isRevoked', true).first();
+
+    return !!record;
+  }
+
+  /**
+   * Cleanup expired tokens (should run periodically)
+   */
+  async cleanupExpiredTokens() {
+    const now = new Date();
+
+    // Delete expired auth tokens
+    const authDeleted = await db('authTokens').where('expiresAt', '<', now).delete();
+
+    // Delete expired refresh tokens
+    const refreshDeleted = await db('refreshTokens').where('expiresAt', '<', now).delete();
+
+    return { authDeleted, refreshDeleted };
   }
 }
 
-// Export singleton
-export const tokenService = new TokenService();
+export const tokenService = new TokenServiceClass();
 export default tokenService;

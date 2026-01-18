@@ -58,7 +58,7 @@ const createPrettyStream = () => {
   if (isProduction) {
     return process.stdout;
   }
-  
+
   const pretty = pino.transport({
     target: 'pino-pretty',
     options: {
@@ -67,7 +67,7 @@ const createPrettyStream = () => {
       ignore: 'pid,hostname',
     },
   });
-  
+
   return pretty;
 };
 
@@ -85,22 +85,22 @@ export const logger = pino(
     hooks: {
       logMethod(inputArgs, method) {
         // Write errors to error log file
-        if (method.level >= 50) { // error and fatal
-          errorLogFile.write(JSON.stringify({
-            level: method.levelLabel,
-            time: new Date().toISOString(),
-            ...inputArgs[0],
-            msg: inputArgs[1] || inputArgs[0]?.msg || '',
-          }) + '\n');
+        if (method.level >= 50) {
+          // error and fatal
+          errorLogFile.write(
+            JSON.stringify({
+              level: method.levelLabel,
+              time: new Date().toISOString(),
+              ...inputArgs[0],
+              msg: inputArgs[1] || inputArgs[0]?.msg || '',
+            }) + '\n'
+          );
         }
         return method.apply(this, inputArgs);
       },
     },
   },
-  pino.multistream([
-    { stream: createPrettyStream() },
-    { stream: appLogFile },
-  ])
+  pino.multistream([{ stream: createPrettyStream() }, { stream: appLogFile }])
 );
 
 /**
@@ -121,23 +121,23 @@ export const httpLogger = pino(
     hooks: {
       logMethod(inputArgs, method) {
         // Write errors to error log file
-        if (method.level >= 50) { // error and fatal
-          errorLogFile.write(JSON.stringify({
-            level: method.levelLabel,
-            time: new Date().toISOString(),
-            type: 'http',
-            ...inputArgs[0],
-            msg: inputArgs[1] || inputArgs[0]?.msg || '',
-          }) + '\n');
+        if (method.level >= 50) {
+          // error and fatal
+          errorLogFile.write(
+            JSON.stringify({
+              level: method.levelLabel,
+              time: new Date().toISOString(),
+              type: 'http',
+              ...inputArgs[0],
+              msg: inputArgs[1] || inputArgs[0]?.msg || '',
+            }) + '\n'
+          );
         }
         return method.apply(this, inputArgs);
       },
     },
   },
-  pino.multistream([
-    { stream: createPrettyStream() },
-    { stream: httpLogFile },
-  ])
+  pino.multistream([{ stream: createPrettyStream() }, { stream: httpLogFile }])
 );
 
 /**

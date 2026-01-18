@@ -69,7 +69,7 @@ export const omit = (obj, keys) => {
  */
 export const deepMerge = (target, source) => {
   const output = { ...target };
-  
+
   for (const key of Object.keys(source)) {
     if (source[key] instanceof Object && key in target) {
       output[key] = deepMerge(target[key], source[key]);
@@ -77,7 +77,7 @@ export const deepMerge = (target, source) => {
       output[key] = source[key];
     }
   }
-  
+
   return output;
 };
 
@@ -118,7 +118,11 @@ export const parsePagination = (query, defaults = { page: 1, limit: 20 }) => {
 /**
  * Parse sort parameters
  */
-export const parseSort = (query, allowedFields = [], defaults = { field: 'created_at', order: 'desc' }) => {
+export const parseSort = (
+  query,
+  allowedFields = [],
+  defaults = { field: 'created_at', order: 'desc' }
+) => {
   let field = query.sort_by || query.sortBy || defaults.field;
   let order = (query.sort_order || query.sortOrder || defaults.order).toLowerCase();
 
@@ -138,17 +142,20 @@ export const parseSort = (query, allowedFields = [], defaults = { field: 'create
 /**
  * Mask sensitive data in object
  */
-export const maskSensitiveData = (obj, sensitiveKeys = ['password', 'token', 'secret', 'apiKey']) => {
+export const maskSensitiveData = (
+  obj,
+  sensitiveKeys = ['password', 'token', 'secret', 'apiKey']
+) => {
   const masked = { ...obj };
-  
+
   for (const key of Object.keys(masked)) {
-    if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))) {
+    if (sensitiveKeys.some((sk) => key.toLowerCase().includes(sk.toLowerCase()))) {
       masked[key] = '***MASKED***';
     } else if (typeof masked[key] === 'object' && masked[key] !== null) {
       masked[key] = maskSensitiveData(masked[key], sensitiveKeys);
     }
   }
-  
+
   return masked;
 };
 

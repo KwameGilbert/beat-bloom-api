@@ -1,10 +1,11 @@
-import { db } from '../config/database.js';
+import { db } from '../database/connection.js';
 import { NotFoundError } from '../utils/errors.js';
-import { generateUUID, parsePagination, parseSort } from '../utils/helpers.js';
+import { parsePagination, parseSort } from '../utils/helpers.js';
 
 /**
  * Base Model
  * All models should extend this class
+ * Updated to support camelCase column names
  */
 export class BaseModel {
   /**
@@ -17,8 +18,17 @@ export class BaseModel {
     this.timestamps = options.timestamps !== false;
     this.softDeletes = options.softDeletes || false;
     this.searchableFields = options.searchableFields || [];
-    this.sortableFields = options.sortableFields || ['created_at', 'updated_at'];
+    this.sortableFields = options.sortableFields || ['createdAt', 'updatedAt'];
     this.hidden = options.hidden || [];
+
+    // Configurable timestamp field names (default to camelCase)
+    this.timestampFields = {
+      created: options.timestampFields?.created || 'createdAt',
+      updated: options.timestampFields?.updated || 'updatedAt',
+    };
+
+    // Configurable soft delete field name
+    this.softDeleteField = options.softDeleteField || 'deletedAt';
   }
 
   /**
@@ -36,7 +46,7 @@ export class BaseModel {
 
     // Exclude soft-deleted records by default
     if (this.softDeletes) {
-      query = query.whereNull(`${this.tableName}.deleted_at`);
+      query = query.whereNull(`${this.tableName}.${this.softDeleteField}`);
     }
 
     return query;
@@ -47,10 +57,7 @@ export class BaseModel {
    */
   async findAll(options = {}) {
     const { page, limit, offset } = parsePagination(options);
-    const { field: sortField, order: sortOrder } = parseSort(
-      options,
-      this.sortableFields
-    );
+    const { field: sortField, order: sortOrder } = parseSort(options, this.sortableFields);
 
     let query = this.query();
 
@@ -94,9 +101,7 @@ export class BaseModel {
    * Find a single record by ID
    */
   async findById(id) {
-    const record = await this.query()
-      .where(`${this.tableName}.${this.primaryKey}`, id)
-      .first();
+    const record = await this.query().where(`${this.tableName}.${this.primaryKey}`, id).first();
 
     return record ? this.hideFields(record) : null;
   }
@@ -118,9 +123,7 @@ export class BaseModel {
    * Find a single record by field value
    */
   async findBy(field, value) {
-    const record = await this.query()
-      .where(`${this.tableName}.${field}`, value)
-      .first();
+    const record = await this.query().where(`${this.tableName}.${field}`, value).first();
 
     return record ? this.hideFields(record) : null;
   }
@@ -129,8 +132,7 @@ export class BaseModel {
    * Find records by field value
    */
   async findAllBy(field, value) {
-    const records = await this.query()
-      .where(`${this.tableName}.${field}`, value);
+    const records = await this.query().where(`${this.tableName}.${field}`, value);
 
     return records.map((record) => this.hideFields(record));
   }
@@ -155,9 +157,7 @@ export class BaseModel {
   async create(data) {
     const record = this.prepareForInsert(data);
 
-    const [created] = await this.getConnection()(this.tableName)
-      .insert(record)
-      .returning('*');
+    const [created] = await this.getConnection()(this.tableName).insert(record).returning('*');
 
     return this.hideFields(created);
   }
@@ -168,9 +168,7 @@ export class BaseModel {
   async createMany(dataArray) {
     const records = dataArray.map((data) => this.prepareForInsert(data));
 
-    const created = await this.getConnection()(this.tableName)
-      .insert(records)
-      .returning('*');
+    const created = await this.getConnection()(this.tableName).insert(records).returning('*');
 
     return created.map((record) => this.hideFields(record));
   }
@@ -238,9 +236,11 @@ export class BaseModel {
    * Soft delete a record
    */
   async softDelete(id) {
+    const updateData = { [this.softDeleteField]: new Date() };
+
     const [updated] = await this.query()
       .where(`${this.tableName}.${this.primaryKey}`, id)
-      .update({ deleted_at: new Date() })
+      .update(updateData)
       .returning('*');
 
     return !!updated;
@@ -250,12 +250,17 @@ export class BaseModel {
    * Restore a soft-deleted record
    */
   async restore(id) {
-    const query = this.getConnection()(this.tableName)
-      .where(`${this.tableName}.${this.primaryKey}`, id);
+    const query = this.getConnection()(this.tableName).where(
+      `${this.tableName}.${this.primaryKey}`,
+      id
+    );
 
-    const [updated] = await query
-      .update({ deleted_at: null, updated_at: new Date() })
-      .returning('*');
+    const updateData = {
+      [this.softDeleteField]: null,
+      [this.timestampFields.updated]: new Date(),
+    };
+
+    const [updated] = await query.update(updateData).returning('*');
 
     return updated ? this.hideFields(updated) : null;
   }
@@ -294,16 +299,12 @@ export class BaseModel {
   prepareForInsert(data) {
     const record = { ...data };
 
-    // Generate UUID if not provided
-    if (!record[this.primaryKey]) {
-      record[this.primaryKey] = generateUUID();
-    }
-
+    // Don't generate UUID - let database handle auto-increment
     // Add timestamps
     if (this.timestamps) {
       const now = new Date();
-      record.created_at = record.created_at || now;
-      record.updated_at = record.updated_at || now;
+      record[this.timestampFields.created] = record[this.timestampFields.created] || now;
+      record[this.timestampFields.updated] = record[this.timestampFields.updated] || now;
     }
 
     return record;
@@ -317,11 +318,11 @@ export class BaseModel {
 
     // Remove immutable fields
     delete record[this.primaryKey];
-    delete record.created_at;
+    delete record[this.timestampFields.created];
 
     // Update timestamp
     if (this.timestamps) {
-      record.updated_at = new Date();
+      record[this.timestampFields.updated] = new Date();
     }
 
     return record;

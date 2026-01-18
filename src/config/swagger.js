@@ -361,10 +361,7 @@ const swaggerOptions = {
     ],
   },
   // Still scan for @swagger comments as fallback
-  apis: [
-    './src/routes/*.js',
-    './src/controllers/*.js',
-  ],
+  apis: ['./src/routes/*.js', './src/controllers/*.js'],
 };
 
 export const swaggerSpec = swaggerJsdoc(swaggerOptions);

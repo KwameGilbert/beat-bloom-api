@@ -7,16 +7,20 @@ import { env } from './env.js';
 
 // Default file size limits (in bytes)
 export const MAX_FILE_SIZES = {
-  image: 5 * 1024 * 1024,      // 5MB
-  document: 10 * 1024 * 1024,  // 10MB
-  video: 50 * 1024 * 1024,     // 50MB
-  default: 5 * 1024 * 1024,    // 5MB
+  image: 5 * 1024 * 1024, // 5MB
+  document: 10 * 1024 * 1024, // 10MB
+  video: 50 * 1024 * 1024, // 50MB
+  default: 5 * 1024 * 1024, // 5MB
 };
 
 // Allowed MIME types
 export const ALLOWED_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  document: [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
   video: ['video/mp4', 'video/mpeg', 'video/quicktime'],
   all: null, // null means allow all types
 };
@@ -31,7 +35,7 @@ export const uploadGroups = {
     types: ALLOWED_TYPES.image,
     maxSize: MAX_FILE_SIZES.default,
   },
-  
+
   // Add your groups here...
   // Example:
   // products: {
