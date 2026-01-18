@@ -26,7 +26,9 @@ class UploadService {
   }
 
   ensureDir(dir) {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
   }
 
   generateFilename(originalName) {
@@ -53,10 +55,11 @@ class UploadService {
    * const result = await uploadService.upload(req.file, 'products');
    */
   async upload(file, group = 'general', options = {}) {
-    if (!file) throw new Error('No file provided');
+    if (!file) {
+      throw new Error('No file provided');
+    }
 
     const config = getGroupConfig(group);
-    const fileType = detectFileType(file.mimetype);
 
     // Validate type
     if (config.types && !config.types.includes(file.mimetype)) {

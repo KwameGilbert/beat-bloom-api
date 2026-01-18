@@ -943,7 +943,7 @@ export const seed = async function (knex) {
   const allLicenseTiers = await knex('licenseTiers').select('*');
   const tierMap = {};
   allLicenseTiers.forEach((t) => {
-    if (!tierMap[t.beatId]) tierMap[t.beatId] = {};
+    if (!tierMap[t.beatId]) {tierMap[t.beatId] = {};}
     tierMap[t.beatId][t.tierType] = t;
   });
 

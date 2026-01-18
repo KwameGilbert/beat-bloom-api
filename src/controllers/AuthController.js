@@ -116,7 +116,7 @@ export class AuthController {
       return ApiResponse.badRequest(res, 'Verification token is required');
     }
 
-    const user = await AuthService.verifyEmail(token);
+    await AuthService.verifyEmail(token);
 
     return ApiResponse.success(res, { verified: true }, 'Email verified successfully');
   });

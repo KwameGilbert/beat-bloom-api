@@ -125,7 +125,9 @@ class PasswordHasher {
       const salt = crypto.randomBytes(this.saltLength).toString('hex');
 
       crypto.scrypt(password, salt, this.keyLength, (err, derivedKey) => {
-        if (err) reject(err);
+        if (err) {
+          reject(err);
+        }
         // Format: $scrypt$salt$hash
         resolve(`$scrypt$${salt}$${derivedKey.toString('hex')}`);
       });
@@ -147,10 +149,12 @@ class PasswordHasher {
         const originalHash = parts[3];
 
         crypto.scrypt(password, salt, this.keyLength, (err, derivedKey) => {
-          if (err) reject(err);
+          if (err) {
+            reject(err);
+          }
           resolve(derivedKey.toString('hex') === originalHash);
         });
-      } catch (error) {
+      } catch (_error) {
         resolve(false);
       }
     });
@@ -167,7 +171,9 @@ class PasswordHasher {
       const iterations = this.rounds * 1000; // Convert rounds to iterations
 
       crypto.pbkdf2(password, salt, iterations, this.keyLength, 'sha512', (err, derivedKey) => {
-        if (err) reject(err);
+        if (err) {
+          reject(err);
+        }
         // Format: $pbkdf2$iterations$salt$hash
         resolve(`$pbkdf2$${iterations}$${salt}$${derivedKey.toString('hex')}`);
       });
@@ -190,10 +196,12 @@ class PasswordHasher {
         const originalHash = parts[4];
 
         crypto.pbkdf2(password, salt, iterations, this.keyLength, 'sha512', (err, derivedKey) => {
-          if (err) reject(err);
+          if (err) {
+            reject(err);
+          }
           resolve(derivedKey.toString('hex') === originalHash);
         });
-      } catch (error) {
+      } catch (_error) {
         resolve(false);
       }
     });
@@ -209,7 +217,7 @@ class PasswordHasher {
     try {
       const argon2 = await import('argon2');
       return argon2.hash(password);
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Argon2 package not installed. Run: npm install argon2');
     }
   }
@@ -222,7 +230,7 @@ class PasswordHasher {
     try {
       const argon2 = await import('argon2');
       return argon2.verify(hash, password);
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Argon2 package not installed. Run: npm install argon2');
     }
   }

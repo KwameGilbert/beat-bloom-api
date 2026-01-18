@@ -1,4 +1,4 @@
-import { db } from '../database/connection.js';
+import { db } from '../config/database.js';
 import { NotFoundError } from '../utils/errors.js';
 import { parsePagination, parseSort } from '../utils/helpers.js';
 
@@ -346,7 +346,7 @@ export class BaseModel {
    */
   applyFilters(query, filters) {
     for (const [key, value] of Object.entries(filters)) {
-      if (value === undefined || value === null) continue;
+      if (value === undefined || value === null) {continue;}
 
       // Handle operators
       if (typeof value === 'object' && !Array.isArray(value)) {

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { db } from '../database/connection.js';
+import { db } from '../config/database.js';
 
 /**
  * Token Service
@@ -140,12 +140,12 @@ class TokenServiceClass {
    * Add token to blacklist (for logout)
    * Using refreshTokens table with isRevoked = true
    */
-  async blacklistToken(token, expiresAt) {
+  async blacklistToken(token, _expiresAt) {
     // For simple blacklisting, we can just mark the token as revoked
     // This works for refresh tokens; for access tokens, we verify expiry
     try {
       await db('refreshTokens').where('token', token).update({ isRevoked: true });
-    } catch (e) {
+    } catch (_e) {
       // Token might not exist in refreshTokens (could be access token)
       // For access tokens, we don't need to blacklist - just let them expire
     }

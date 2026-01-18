@@ -75,7 +75,7 @@ export const stopAllJobs = () => {
  */
 export const getJobStatus = (name) => {
   const jobInfo = jobRegistry.get(name);
-  if (!jobInfo) return null;
+  if (!jobInfo) {return null;}
 
   return {
     name,

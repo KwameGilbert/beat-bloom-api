@@ -5,7 +5,7 @@ import { getGroupConfig } from '../config/upload.js';
 
 // Temp directory
 const tempDir = path.join(process.cwd(), 'temp');
-if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+if (!fs.existsSync(tempDir)) {fs.mkdirSync(tempDir, { recursive: true });}
 
 // Storage config
 const storage = multer.diskStorage({
@@ -32,7 +32,7 @@ export const upload = (group = 'general') => {
     limits: { fileSize: config.maxSize },
     fileFilter: (req, file, cb) => {
       // If types is null, allow all
-      if (!config.types) return cb(null, true);
+      if (!config.types) {return cb(null, true);}
 
       if (config.types.includes(file.mimetype)) {
         cb(null, true);

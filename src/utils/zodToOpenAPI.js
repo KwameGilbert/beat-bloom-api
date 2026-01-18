@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 /**
  * Automatic OpenAPI Schema Generator from Zod Schemas
  * Converts Zod validation schemas to OpenAPI 3.0 schemas
@@ -8,7 +6,7 @@ export class ZodToOpenAPI {
   /**
    * Convert Zod schema to OpenAPI schema
    */
-  static convert(zodSchema, options = {}) {
+  static convert(zodSchema, _options = {}) {
     if (!zodSchema || !zodSchema._def) {
       return { type: 'object' };
     }
@@ -110,11 +108,15 @@ export class ZodToOpenAPI {
       switch (check.kind) {
         case 'min':
           schema.minimum = check.value;
-          if (check.inclusive === false) schema.exclusiveMinimum = true;
+          if (check.inclusive === false) {
+            schema.exclusiveMinimum = true;
+          }
           break;
         case 'max':
           schema.maximum = check.value;
-          if (check.inclusive === false) schema.exclusiveMaximum = true;
+          if (check.inclusive === false) {
+            schema.exclusiveMaximum = true;
+          }
           break;
       }
     }

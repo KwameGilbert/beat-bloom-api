@@ -21,7 +21,7 @@ const envSchema = z.object({
     .string()
     .transform((val) => {
       // Default ports based on client
-      if (!val) return undefined;
+      if (!val) {return undefined;}
       return Number(val);
     })
     .optional(),

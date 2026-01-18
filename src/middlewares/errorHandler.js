@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import { ApiError } from '../utils/errors.js';
+
 import { ApiResponse } from '../utils/response.js';
 import { logger } from '../config/logger.js';
 import { isProduction } from '../config/env.js';
@@ -18,7 +18,7 @@ export const notFoundHandler = (req, res) => {
 /**
  * Global error handler
  */
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res, _next) => {
   // Default error values
   let statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   let message = err.message || 'Internal Server Error';

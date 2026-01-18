@@ -20,8 +20,8 @@ export const requestLogger = pinoHttp({
   logger: httpLogger,
   genReqId: (req) => req.id,
   customLogLevel: (req, res, err) => {
-    if (res.statusCode >= 500 || err) return 'error';
-    if (res.statusCode >= 400) return 'warn';
+    if (res.statusCode >= 500 || err) {return 'error';}
+    if (res.statusCode >= 400) {return 'warn';}
     return 'info';
   },
   customSuccessMessage: (req, res) => {
@@ -56,7 +56,7 @@ export const requestLogger = pinoHttp({
   // Don't log health check requests in production
   autoLogging: {
     ignore: (req) => {
-      if (isProduction && req.url === '/health') return true;
+      if (isProduction && req.url === '/health') {return true;}
       return false;
     },
   },

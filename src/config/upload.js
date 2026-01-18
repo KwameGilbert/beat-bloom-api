@@ -1,5 +1,3 @@
-import { env } from './env.js';
-
 /**
  * Upload Configuration
  * Simple, centralized upload settings
@@ -55,9 +53,15 @@ export const getGroupConfig = (group) => {
  * Detect file category from MIME type
  */
 export const detectFileType = (mimetype) => {
-  if (ALLOWED_TYPES.image?.includes(mimetype)) return 'image';
-  if (ALLOWED_TYPES.document?.includes(mimetype)) return 'document';
-  if (ALLOWED_TYPES.video?.includes(mimetype)) return 'video';
+  if (ALLOWED_TYPES.image?.includes(mimetype)) {
+    return 'image';
+  }
+  if (ALLOWED_TYPES.document?.includes(mimetype)) {
+    return 'document';
+  }
+  if (ALLOWED_TYPES.video?.includes(mimetype)) {
+    return 'video';
+  }
   return 'unknown';
 };
 

@@ -72,7 +72,7 @@ export class HealthController {
     try {
       await db.raw('SELECT 1');
       return ApiResponse.success(res, { ready: true });
-    } catch (error) {
+    } catch (_error) {
       return res.status(503).json({
         success: false,
         data: { ready: false },

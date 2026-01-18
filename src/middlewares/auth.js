@@ -2,16 +2,6 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { UnauthorizedError, ForbiddenError } from '../utils/errors.js';
 
-// Lazy load tokenService to avoid circular dependencies
-let tokenService = null;
-const getTokenService = async () => {
-  if (!tokenService) {
-    const module = await import('../services/TokenService.js');
-    tokenService = module.tokenService;
-  }
-  return tokenService;
-};
-
 /**
  * Verify JWT token and attach user to request
  * Checks token blacklist for invalidated tokens
@@ -67,7 +57,7 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     next();
-  } catch (error) {
+  } catch (_error) {
     // Silently continue without user context
     next();
   }

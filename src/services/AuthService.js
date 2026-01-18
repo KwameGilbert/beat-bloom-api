@@ -8,7 +8,6 @@ import {
   ConflictError,
   NotFoundError,
 } from '../utils/errors.js';
-import { env } from '../config/env.js';
 
 /**
  * Authentication Service for BeatBloom
@@ -65,7 +64,7 @@ export class AuthService {
     }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _pw, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -116,7 +115,7 @@ export class AuthService {
     }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _pw, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -164,7 +163,7 @@ export class AuthService {
       }
 
       return tokens;
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedError('Invalid or expired refresh token');
     }
   }
@@ -327,7 +326,15 @@ export class AuthService {
    */
   static async updateProfile(userId, data) {
     // Prevent updating sensitive fields
-    const { password, role, status, emailVerifiedAt, mfaEnabled, mfaSecret, ...safeData } = data;
+    const {
+      password: _password,
+      role: _role,
+      status: _status,
+      emailVerifiedAt: _emailVerifiedAt,
+      mfaEnabled: _mfaEnabled,
+      mfaSecret: _mfaSecret,
+      ...safeData
+    } = data;
 
     const user = await UserModel.update(userId, safeData);
 
