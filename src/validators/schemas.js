@@ -55,7 +55,12 @@ export const authSchemas = {
 
   updateProfile: z.object({
     name: z.string().min(1).max(100).optional(),
+    phone: z.string().max(20).optional().nullable(),
     avatar: z.string().url().optional().nullable(),
+    coverImage: z.string().url().optional().nullable(),
+    location: z.string().max(100).optional().nullable(),
+    website: z.string().url().optional().nullable(),
+    bio: z.string().max(500).optional().nullable(),
   }),
 
   updateSettings: z.object({
@@ -63,6 +68,10 @@ export const authSchemas = {
     pushNotifications: z.boolean().optional(),
     publicProfile: z.boolean().optional(),
     theme: z.enum(['dark', 'light']).optional(),
+  }),
+
+  logout: z.object({
+    refreshToken: z.string().optional(),
   }),
 };
 
