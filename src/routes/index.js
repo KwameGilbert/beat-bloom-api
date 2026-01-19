@@ -14,6 +14,9 @@ import playlistRoutes from './playlistRoutes.js';
 import orderRoutes from './orderRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
 import cartRoutes from './cartRoutes.js';
+import settingsRoutes from './settingsRoutes.js';
+import pageRoutes from './pageRoutes.js';
+import paymentRoutes from './paymentRoutes.js';
 
 const router = Router();
 
@@ -62,6 +65,15 @@ apiRouter.use('/orders', orderRoutes);
 
 // Upload routes
 apiRouter.use('/upload', uploadRoutes);
+
+// Platform settings routes
+apiRouter.use('/settings', settingsRoutes);
+
+// Page aggregation routes
+apiRouter.use('/pages', pageRoutes);
+
+// Payment routes
+apiRouter.use('/payments', paymentRoutes);
 
 // Mount API routes
 router.use('/api', apiRouter);

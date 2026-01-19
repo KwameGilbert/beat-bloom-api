@@ -79,6 +79,9 @@ const envSchema = z.object({
   APP_NAME: z.string().default('Express Backend'),
   APP_URL: z.string().optional(),
   API_VERSION: z.string().default('v1'),
+
+  // Paystack
+  PAYSTACK_SECRET_KEY: z.string().optional(),
 });
 
 /**

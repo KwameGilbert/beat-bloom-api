@@ -44,7 +44,7 @@ const createApp = () => {
       origin: env.CORS_ORIGIN === '*' ? '*' : env.CORS_ORIGIN.split(','),
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-Session-ID'],
     })
   );
 
@@ -52,7 +52,14 @@ const createApp = () => {
   app.use(compression());
 
   // Body parsing
-  app.use(express.json({ limit: '10mb' }));
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req, res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Serve uploaded files (only for local storage)

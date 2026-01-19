@@ -1,23 +1,20 @@
 import { db } from '../config/database.js';
 import { NotFoundError } from '../utils/errors.js';
+import { PlatformSettingsService } from './PlatformSettingsService.js';
 
 /**
  * Cart Service - Server-side cart management
  */
 export const CartService = {
   /**
-   * Get user's cart items
+   * Get user's cart items with calculated fees
    */
   async getCart(userId, sessionId = null) {
     const query = db('cartItems')
       .select(
-        'cartItems.*',
-        'beats.id as beatId',
-        'beats.title',
-        'beats.coverImage',
-        'beats.duration',
-        'beats.bpm',
-        'beats.musicalKey',
+        'beats.*',
+        'cartItems.id as cartItemId',
+        'cartItems.licenseTierId',
         'producers.displayName as producerName',
         'producers.username as producerUsername',
         'genres.name as genreName',
@@ -36,18 +33,45 @@ export const CartService = {
     } else if (sessionId) {
       query.where('cartItems.sessionId', sessionId);
     } else {
-      return [];
+      return {
+        items: [],
+        count: 0,
+        subtotal: 0,
+        processingFee: 0,
+        platformFee: 0,
+        total: 0,
+        feeSettings: {},
+      };
     }
 
     const items = await query.orderBy('cartItems.createdAt', 'desc');
 
-    // Calculate total
-    const total = items.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
+    // Calculate subtotal
+    const subtotal = items.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
+
+    // Get fee settings and calculate fees
+    const feeSettings = await PlatformSettingsService.getFeeSettings();
+    const processingFee =
+      Math.round(
+        ((subtotal * feeSettings.processingFeePercentage) / 100 + feeSettings.processingFeeFixed) *
+          100
+      ) / 100;
+    const platformFee =
+      Math.round(((subtotal * feeSettings.platformCommissionRate) / 100) * 100) / 100;
+    const total = Math.round((subtotal + processingFee) * 100) / 100;
 
     return {
       items,
-      total,
       count: items.length,
+      subtotal: Math.round(subtotal * 100) / 100,
+      processingFee,
+      platformFee,
+      total,
+      feeSettings: {
+        processingFeePercentage: feeSettings.processingFeePercentage,
+        processingFeeFixed: feeSettings.processingFeeFixed,
+        platformCommissionRate: feeSettings.platformCommissionRate,
+      },
     };
   },
 

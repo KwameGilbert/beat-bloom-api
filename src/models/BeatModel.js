@@ -93,6 +93,10 @@ class BeatModel extends BaseModel {
         'beats.*',
         'producers.displayName as producerName',
         'producers.username as producerUsername',
+        'producers.avatar as producerAvatar',
+        'producers.bio as producerBio',
+        'producers.location as producerLocation',
+        'producers.isVerified as producerIsVerified',
         'genres.name as genreName',
         'genres.slug as genreSlug'
       )
@@ -154,6 +158,9 @@ class BeatModel extends BaseModel {
         'producers.displayName as producerName',
         'producers.username as producerUsername',
         'producers.avatar as producerAvatar',
+        'producers.bio as producerBio',
+        'producers.location as producerLocation',
+        'producers.isVerified as producerIsVerified',
         'genres.name as genreName'
       )
       .leftJoin('producers', 'beats.producerId', 'producers.id')
@@ -180,6 +187,10 @@ class BeatModel extends BaseModel {
         'beats.*',
         'producers.displayName as producerName',
         'producers.username as producerUsername',
+        'producers.avatar as producerAvatar',
+        'producers.bio as producerBio',
+        'producers.location as producerLocation',
+        'producers.isVerified as producerIsVerified',
         'genres.name as genreName'
       )
       .leftJoin('producers', 'beats.producerId', 'producers.id')
