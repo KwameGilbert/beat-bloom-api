@@ -60,12 +60,16 @@ export const ActivityService = {
    */
   async recordPlay(userId, beatId, details = {}) {
     const entry = {
-      userId,
       beatId,
-      sessionId: details.sessionId,
+      sessionId: details.sessionId || null,
       playDurationSeconds: details.duration || 0,
       playedAt: new Date(),
     };
+
+    // Only include userId if it exists (authenticated user)
+    if (userId) {
+      entry.userId = userId;
+    }
 
     await db('playHistory').insert(entry);
     await BeatModel.incrementPlays(beatId);
