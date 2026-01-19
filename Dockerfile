@@ -3,14 +3,15 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# Copy package files
+# Copy package files first for better layer caching
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies with cache mount for faster rebuilds
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -20,8 +21,11 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Install wget for healthcheck
+RUN apk add --no-cache wget
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -30,10 +34,11 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Install production dependencies with cache mount
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prod
 
-# Copy source code
+# Copy source code from builder
 COPY --from=builder /app/src ./src
 
 # Set ownership
