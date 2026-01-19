@@ -1,6 +1,6 @@
 import { UserService } from '../services/UserService.js';
 import { ApiResponse } from '../utils/response.js';
-import { asyncHandler } from '../middlewares/errorHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import { parsePagination } from '../utils/helpers.js';
 
 /**

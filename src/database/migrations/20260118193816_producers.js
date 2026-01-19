@@ -35,7 +35,7 @@ export const up = async function (knex) {
     // Status & settings
     table.boolean('isVerified').defaultTo(false);
     table.boolean('isActive').defaultTo(true);
-    
+
     // Commission - producer's percentage of each sale (platform takes the rest)
     table.decimal('commissionRate', 5, 2).defaultTo(85.0); // 85% to producer
 

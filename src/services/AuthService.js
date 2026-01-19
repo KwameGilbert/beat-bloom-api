@@ -33,7 +33,6 @@ export class AuthService {
       name,
       role, // 'producer', 'artist', or 'admin'
       status: 'active',
-      avatar: null,
       emailVerifiedAt: null,
       emailNotifications: true,
       pushNotifications: false,
@@ -350,6 +349,35 @@ export class AuthService {
    */
   static async updateSettings(userId, settings) {
     return UserModel.updateSettings(userId, settings);
+  }
+
+  /**
+   * Delete current user account
+   */
+  static async deleteAccount(userId) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    return UserModel.getConnection().transaction(async (trx) => {
+      // Delete user (BaseModel handles soft delete if configured, but we want hard delete or controlled soft delete)
+      await trx('users').where('id', userId).del();
+
+      // Revoke all tokens
+      await trx('refreshTokens').where('userId', userId).del();
+
+      // Trigger goodbye email (non-blocking)
+      emailService
+        .sendEmail(
+          user.email,
+          'Account Deleted',
+          `Goodbye ${user.name}, your account has been deleted.`
+        )
+        .catch((err) => console.error('Failed to send goodbye email:', err.message));
+
+      return true;
+    });
   }
 }
 

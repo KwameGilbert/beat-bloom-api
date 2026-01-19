@@ -1,6 +1,6 @@
 import { AuthService } from '../services/AuthService.js';
 import { ApiResponse } from '../utils/response.js';
-import { asyncHandler } from '../middlewares/errorHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * Authentication Controller for BeatBloom
@@ -151,6 +151,15 @@ export class AuthController {
     }
 
     return ApiResponse.success(res, null, 'Logged out successfully');
+  });
+
+  /**
+   * Delete account
+   * DELETE /auth/me
+   */
+  static deleteAccount = asyncHandler(async (req, res) => {
+    await AuthService.deleteAccount(req.user.id);
+    return ApiResponse.success(res, null, 'Account deleted successfully');
   });
 }
 

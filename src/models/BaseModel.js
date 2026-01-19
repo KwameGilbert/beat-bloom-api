@@ -346,7 +346,9 @@ export class BaseModel {
    */
   applyFilters(query, filters) {
     for (const [key, value] of Object.entries(filters)) {
-      if (value === undefined || value === null) {continue;}
+      if (value === undefined || value === null) {
+        continue;
+      }
 
       // Handle operators
       if (typeof value === 'object' && !Array.isArray(value)) {

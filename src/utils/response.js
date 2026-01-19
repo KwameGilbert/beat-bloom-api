@@ -67,4 +67,18 @@ export class ApiResponse {
   }
 }
 
+/**
+ * Functional helpers for backward compatibility/different styles
+ */
+export const successResponse = (res, data, message, extra = {}) => {
+  if (extra.pagination) {
+    return ApiResponse.paginated(res, data, extra.pagination, message);
+  }
+  return ApiResponse.success(res, data, message);
+};
+
+export const errorResponse = (res, message, statusCode, errors) => {
+  return ApiResponse.error(res, message, statusCode, errors);
+};
+
 export default ApiResponse;

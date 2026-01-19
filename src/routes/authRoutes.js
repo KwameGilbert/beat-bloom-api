@@ -126,4 +126,11 @@ router.post(
  */
 router.post('/logout', authenticate, AuthController.logout);
 
+/**
+ * @route DELETE /auth/me
+ * @desc Delete current user account
+ * @access Private
+ */
+router.delete('/me', authenticate, AuthController.deleteAccount);
+
 export default router;

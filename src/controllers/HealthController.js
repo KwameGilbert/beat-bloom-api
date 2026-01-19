@@ -1,6 +1,6 @@
 import { db } from '../config/database.js';
 import { ApiResponse } from '../utils/response.js';
-import { asyncHandler } from '../middlewares/errorHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import { env } from '../config/env.js';
 
 /**
