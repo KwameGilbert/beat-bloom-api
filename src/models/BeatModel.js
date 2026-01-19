@@ -26,7 +26,10 @@ class BeatModel extends BaseModel {
   async findAllDetailed(options = {}) {
     // Base query for filtering
     const baseFilters = (query) => {
-      query = query.where('beats.deletedAt', null).where('beats.status', 'active');
+      query = query
+        .where('beats.deletedAt', null)
+        .where('beats.status', 'active')
+        .where('beats.isExclusiveSold', false);
 
       // Apply filters
       if (options.filters) {
@@ -196,6 +199,7 @@ class BeatModel extends BaseModel {
       .leftJoin('producers', 'beats.producerId', 'producers.id')
       .leftJoin('genres', 'beats.genreId', 'genres.id')
       .where('beats.status', 'active')
+      .where('beats.isExclusiveSold', false)
       .whereNull('beats.deletedAt')
       .orderBy('playsCount', 'desc')
       .limit(limit);

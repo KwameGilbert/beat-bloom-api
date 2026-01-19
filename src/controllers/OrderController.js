@@ -42,6 +42,16 @@ export const OrderController = {
     const purchases = await OrderService.getUserPurchases(userId);
     return successResponse(res, purchases, 'Purchases retrieved successfully');
   }),
+
+  /**
+   * Get purchased license tiers for a specific beat
+   */
+  getPurchasedTiersForBeat: asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { beatId } = req.params;
+    const tiers = await OrderService.getUserPurchasedTiersForBeat(userId, beatId);
+    return successResponse(res, tiers, 'Purchased tiers retrieved successfully');
+  }),
 };
 
 export default OrderController;

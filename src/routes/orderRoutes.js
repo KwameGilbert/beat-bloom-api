@@ -13,6 +13,7 @@ router.use(authenticate);
 router.post('/', OrderController.create);
 router.get('/', OrderController.listMyOrders);
 router.get('/purchases', OrderController.listMyPurchases);
+router.get('/purchases/beat/:beatId', OrderController.getPurchasedTiersForBeat);
 router.get('/:id', OrderController.get);
 
 export default router;

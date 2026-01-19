@@ -39,6 +39,13 @@ export const OrderService = {
           throw new NotFoundError(`Beat or license tier not found for ID ${item.beatId}`);
         }
 
+        // Prevent purchasing exclusively sold beats
+        if (beat.isExclusiveSold) {
+          throw new BadRequestError(
+            `Beat "${beat.title}" has been exclusively sold and is no longer available for purchase`
+          );
+        }
+
         const price = parseFloat(tier.price);
         subtotal += price;
 
@@ -132,15 +139,55 @@ export const OrderService = {
         'beats.previewAudioUrl',
         'beats.bpm',
         'beats.musicalKey',
+        'beats.duration',
+        'beats.producerId',
         'producers.displayName as producerName',
         'producers.username as producerUsername',
-        'orderItems.price'
+        'orderItems.price',
+        'orderItems.licenseName',
+        'orderItems.isExclusive',
+        'licenseTiers.name as tierName',
+        'licenseTiers.tierType',
+        'licenseTiers.includedFiles'
       )
       .join('beats', 'userPurchases.beatId', 'beats.id')
       .leftJoin('producers', 'beats.producerId', 'producers.id')
       .leftJoin('orderItems', 'userPurchases.orderItemId', 'orderItems.id')
+      .leftJoin('licenseTiers', 'userPurchases.licenseTierId', 'licenseTiers.id')
       .where('userPurchases.userId', userId)
       .orderBy('userPurchases.purchasedAt', 'desc');
+  },
+
+  /**
+   * Check if user has purchased a specific beat (any license)
+   */
+  async hasUserPurchasedBeat(userId, beatId) {
+    const purchase = await db('userPurchases').where({ userId, beatId }).first();
+    return !!purchase;
+  },
+
+  /**
+   * Check if user has purchased a specific license tier for a beat
+   */
+  async hasUserPurchasedLicense(userId, beatId, licenseTierId) {
+    const purchase = await db('userPurchases').where({ userId, beatId, licenseTierId }).first();
+    return !!purchase;
+  },
+
+  /**
+   * Get user's purchased license tiers for a specific beat
+   */
+  async getUserPurchasedTiersForBeat(userId, beatId) {
+    return db('userPurchases')
+      .select(
+        'userPurchases.licenseTierId',
+        'userPurchases.licenseType',
+        'userPurchases.purchasedAt',
+        'licenseTiers.name as tierName',
+        'licenseTiers.tierType'
+      )
+      .leftJoin('licenseTiers', 'userPurchases.licenseTierId', 'licenseTiers.id')
+      .where({ 'userPurchases.userId': userId, 'userPurchases.beatId': beatId });
   },
 
   /**
@@ -202,7 +249,7 @@ export const OrderService = {
         if (item.isExclusive) {
           await trx('beats').where('id', item.beatId).update({
             isExclusiveSold: true,
-            status: 'sold',
+            status: 'soldExclusive',
           });
         }
       }

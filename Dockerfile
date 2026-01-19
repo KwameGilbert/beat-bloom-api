@@ -27,10 +27,6 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 # Install wget for healthcheck
 RUN apk add --no-cache wget
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S expressjs -u 1001
-
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
@@ -41,8 +37,10 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
 # Copy source code from builder
 COPY --from=builder /app/src ./src
 
-# Set ownership
-RUN chown -R expressjs:nodejs /app
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S expressjs -u 1001 && \
+    chown -R expressjs:nodejs /app
 
 # Switch to non-root user
 USER expressjs

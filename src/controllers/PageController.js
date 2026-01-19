@@ -45,6 +45,7 @@ export const PageController = {
    */
   getBeatDetailPage: asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const userId = req.user?.id; // Optional - may be unauthenticated
 
     // 1. Core Beat Data with Producer basic info
     const beat = await BeatModel.findDetailById(id);
@@ -53,16 +54,37 @@ export const PageController = {
       throw new NotFoundError('Beat not found');
     }
 
-    // 2. License Tiers
+    // 2. Check if beat is exclusively sold - only owner can view
+    if (beat.isExclusiveSold) {
+      // Check if current user is the exclusive owner
+      let isExclusiveOwner = false;
+
+      if (userId) {
+        const exclusivePurchase = await db('userPurchases')
+          .join('licenseTiers', 'userPurchases.licenseTierId', 'licenseTiers.id')
+          .where('userPurchases.userId', userId)
+          .where('userPurchases.beatId', id)
+          .where('licenseTiers.isExclusive', true)
+          .first();
+
+        isExclusiveOwner = !!exclusivePurchase;
+      }
+
+      if (!isExclusiveOwner) {
+        throw new NotFoundError('This beat is has been sold exclusive and no longer available');
+      }
+    }
+
+    // 3. License Tiers
     const licenseTiers = await db('licenseTiers')
       .where('beatId', id)
       .where('isEnabled', true)
       .orderBy('price', 'asc');
 
-    // 3. Full Producer Profile
+    // 4. Full Producer Profile
     const producer = await ProducerModel.findById(beat.producerId);
 
-    // 4. More from this Producer
+    // 5. More from this Producer
     const moreFromProducer = await BeatModel.findAllDetailed({
       filters: { producerId: beat.producerId },
       limit: 6,

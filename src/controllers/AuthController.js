@@ -53,7 +53,14 @@ export class AuthController {
    * PATCH /auth/me
    */
   static updateProfile = asyncHandler(async (req, res) => {
-    const user = await AuthService.updateProfile(req.user.id, req.body);
+    // Collect all data including files
+    const updateData = {
+      ...req.body,
+      avatarFile: req.files?.avatar?.[0],
+      coverImageFile: req.files?.coverImage?.[0],
+    };
+
+    const user = await AuthService.updateProfile(req.user.id, updateData);
 
     return ApiResponse.success(res, user, 'Profile updated successfully');
   });

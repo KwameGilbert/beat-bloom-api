@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PageController } from '../controllers/PageController.js';
-import { authenticate } from '../middlewares/auth.js';
+import { authenticate, optionalAuth } from '../middlewares/auth.js';
 import { validateParams } from '../middlewares/validate.js';
 import { beatSchemas } from '../validators/schemas.js';
 
@@ -21,10 +21,11 @@ router.get('/home', PageController.getHomePage);
 /**
  * @route GET /pages/beat-detail/:id
  * @desc Get all data for beat detail page
- * @access Public
+ * @access Public (optionalAuth to check exclusive ownership)
  */
 router.get(
   '/beat-detail/:id',
+  optionalAuth,
   validateParams(beatSchemas.params),
   PageController.getBeatDetailPage
 );

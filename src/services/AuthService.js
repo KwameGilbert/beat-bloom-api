@@ -7,7 +7,9 @@ import {
   UnauthorizedError,
   ConflictError,
   NotFoundError,
+  ForbiddenError,
 } from '../utils/errors.js';
+import { uploadService } from './UploadService.js';
 
 /**
  * Authentication Service for BeatBloom
@@ -324,7 +326,6 @@ export class AuthService {
    * Update current user profile
    */
   static async updateProfile(userId, data) {
-    // Prevent updating sensitive fields
     const {
       password: _password,
       role: _role,
@@ -332,8 +333,22 @@ export class AuthService {
       emailVerifiedAt: _emailVerifiedAt,
       mfaEnabled: _mfaEnabled,
       mfaSecret: _mfaSecret,
+      avatarFile,
+      coverImageFile,
       ...safeData
     } = data;
+
+    // Handle avatar upload if provided
+    if (avatarFile) {
+      const uploadResult = await uploadService.upload(avatarFile, 'avatar');
+      safeData.avatar = uploadResult.url;
+    }
+
+    // Handle cover image upload if provided
+    if (coverImageFile) {
+      const uploadResult = await uploadService.upload(coverImageFile, 'cover');
+      safeData.coverImage = uploadResult.url;
+    }
 
     const user = await UserModel.update(userId, safeData);
 

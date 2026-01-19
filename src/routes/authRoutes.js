@@ -4,6 +4,7 @@ import { authSchemas } from '../validators/schemas.js';
 import { validateBody } from '../middlewares/validate.js';
 import { authenticate } from '../middlewares/auth.js';
 import { authRateLimiter } from '../middlewares/rateLimiter.js';
+import { upload } from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -61,13 +62,16 @@ router.get('/me', authenticate, AuthController.getProfile);
 
 /**
  * @route PATCH /auth/me
- * @desc Update current user profile
+ * @desc Update current user profile (Supports multipart for avatar/cover)
  * @access Private
  */
 router.patch(
   '/me',
   authenticate,
-  validateBody(authSchemas.updateProfile),
+  upload('general').fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'coverImage', maxCount: 1 },
+  ]),
   AuthController.updateProfile
 );
 

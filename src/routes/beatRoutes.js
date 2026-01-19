@@ -1,6 +1,6 @@
 import express from 'express';
 import { BeatController } from '../controllers/BeatController.js';
-import { authenticate, requireProducer } from '../middlewares/auth.js';
+import { authenticate, requireProducer, optionalAuth } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -18,9 +18,9 @@ router.get('/trending', BeatController.trending);
 
 /**
  * @route GET /api/beats/:id
- * @desc Get beat details
+ * @desc Get beat details (optionalAuth to check exclusive ownership)
  */
-router.get('/:id', BeatController.get);
+router.get('/:id', optionalAuth, BeatController.get);
 
 /**
  * @route POST /api/beats/:id/play

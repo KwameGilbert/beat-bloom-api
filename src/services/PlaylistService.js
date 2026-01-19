@@ -50,7 +50,7 @@ export const PlaylistService = {
    * Create a new playlist
    */
   async createPlaylist(userId, data) {
-    const [id] = await db('playlists')
+    const [result] = await db('playlists')
       .insert({
         userId,
         name: data.name,
@@ -58,9 +58,13 @@ export const PlaylistService = {
         color: data.color || 'bg-orange-500',
         isPublic: data.isPublic || false,
       })
-      .returning('id');
+      .returning('*');
 
-    return this.getPlaylistDetail(id, userId);
+    // Return the full playlist with beats array
+    return {
+      ...result,
+      beats: [],
+    };
   },
 
   /**

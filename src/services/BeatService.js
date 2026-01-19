@@ -16,11 +16,33 @@ export const BeatService = {
 
   /**
    * Get beat detail by ID
+   * @param {number|string} id - Beat ID
+   * @param {number|null} userId - Optional user ID to check exclusive ownership
    */
-  async getBeat(id) {
+  async getBeat(id, userId = null) {
     const beat = await BeatModel.findDetailById(id);
     if (!beat) {
       throw new NotFoundError('Beat not found');
+    }
+
+    // Check if beat is exclusively sold - only owner can view
+    if (beat.isExclusiveSold) {
+      let isExclusiveOwner = false;
+
+      if (userId) {
+        const exclusivePurchase = await db('userPurchases')
+          .join('licenseTiers', 'userPurchases.licenseTierId', 'licenseTiers.id')
+          .where('userPurchases.userId', userId)
+          .where('userPurchases.beatId', id)
+          .where('licenseTiers.isExclusive', true)
+          .first();
+
+        isExclusiveOwner = !!exclusivePurchase;
+      }
+
+      if (!isExclusiveOwner) {
+        throw new NotFoundError('This beat is no longer available');
+      }
     }
 
     // Fetch license tiers for this beat

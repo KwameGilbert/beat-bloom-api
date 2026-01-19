@@ -53,7 +53,8 @@ export const BeatController = {
    */
   get: asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const beat = await BeatService.getBeat(id);
+    const userId = req.user?.id; // Optional - may be unauthenticated
+    const beat = await BeatService.getBeat(id, userId);
     return successResponse(res, beat, 'Beat retrieved successfully');
   }),
 
