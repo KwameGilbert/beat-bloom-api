@@ -110,26 +110,44 @@ export const PageController = {
   getProfilePage: asyncHandler(async (req, res) => {
     const userId = req.user.id;
 
-    // 1. User Info (Join with producers to get profile details if they exist)
+    // 1. Get user with basic info
+    const userBase = await db('users').where('id', userId).first();
+
+    if (!userBase) {
+      throw new NotFoundError('User not found');
+    }
+
+    // 2. Determine profile table based on role
+    const profileTables = {
+      producer: 'producers',
+      artist: 'artists',
+      admin: 'admins',
+    };
+
+    const profileTable = profileTables[userBase.role] || 'artists';
+
+    // 3. User Info (Join with correct profile table)
     const user = await db('users')
-      .leftJoin('producers', 'users.id', 'producers.userId')
+      .leftJoin(profileTable, 'users.id', `${profileTable}.userId`)
       .select(
         'users.id',
         'users.name',
         'users.email',
         'users.role',
         'users.createdAt',
-        'producers.avatar',
-        'producers.bio',
-        'producers.location',
-        'producers.website',
-        'producers.username as producerUsername'
+        `${profileTable}.avatar`,
+        `${profileTable}.coverImage`,
+        `${profileTable}.bio`,
+        `${profileTable}.location`,
+        `${profileTable}.website`
       )
       .where('users.id', userId)
       .first();
 
-    if (!user) {
-      throw new NotFoundError('User not found');
+    // Add extra field for producer role
+    if (userBase.role === 'producer') {
+      const producer = await db('producers').where('userId', userId).select('username').first();
+      user.producerUsername = producer?.username;
     }
 
     // 2. Purchased Beats

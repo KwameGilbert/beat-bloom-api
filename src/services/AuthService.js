@@ -1,4 +1,7 @@
 import { UserModel } from '../models/UserModel.js';
+import { ProducerModelInstance as ProducerModel } from '../models/ProducerModel.js';
+import { ArtistModelInstance as ArtistModel } from '../models/ArtistModel.js';
+import { AdminModelInstance as AdminModel } from '../models/AdminModel.js';
 import { generateTokens, verifyRefreshToken } from '../middlewares/auth.js';
 import { tokenService } from './TokenService.js';
 import { emailService } from './EmailService.js';
@@ -7,9 +10,11 @@ import {
   UnauthorizedError,
   ConflictError,
   NotFoundError,
-  ForbiddenError,
 } from '../utils/errors.js';
 import { uploadService } from './UploadService.js';
+import { authenticator } from 'otplib';
+import QRCode from 'qrcode';
+import crypto from 'crypto';
 
 /**
  * Authentication Service for BeatBloom
@@ -62,6 +67,26 @@ export class AuthService {
     // Store refresh token
     if (tokens.refreshToken) {
       await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
+    }
+
+    // Create profile record based on role
+    if (role === 'producer') {
+      await ProducerModel.create({
+        userId: user.id,
+        username: email.split('@')[0].toLowerCase() + Math.floor(Math.random() * 1000),
+        displayName: name,
+      });
+    } else if (role === 'admin') {
+      await AdminModel.create({
+        userId: user.id,
+        displayName: name,
+      });
+    } else {
+      // Default to artist
+      await ArtistModel.create({
+        userId: user.id,
+        displayName: name,
+      });
     }
 
     // Remove password from response
@@ -313,13 +338,30 @@ export class AuthService {
       throw new NotFoundError('User not found');
     }
 
-    // Get producer profile if exists
-    const producerProfile = await UserModel.getProducerProfile(userId);
-
-    return {
-      ...user,
-      producer: producerProfile || null,
+    const modelMap = {
+      producer: ProducerModel,
+      artist: ArtistModel,
+      admin: AdminModel,
     };
+
+    const Model = modelMap[user.role] || ArtistModel;
+    const profile = await Model.findByUserId(userId);
+
+    const mergedUser = { ...user };
+
+    if (profile) {
+      mergedUser.avatar = profile.avatar;
+      mergedUser.coverImage = profile.coverImage;
+      mergedUser.bio = profile.bio;
+      mergedUser.location = profile.location;
+      mergedUser.website = profile.website;
+      if (user.role === 'producer') {
+        mergedUser.username = profile.username;
+        mergedUser.displayName = profile.displayName;
+      }
+    }
+
+    return mergedUser;
   }
 
   /**
@@ -338,25 +380,62 @@ export class AuthService {
       ...safeData
     } = data;
 
-    // Handle avatar upload if provided
+    // Handle profile images
     if (avatarFile) {
       const uploadResult = await uploadService.upload(avatarFile, 'avatar');
       safeData.avatar = uploadResult.url;
     }
 
-    // Handle cover image upload if provided
     if (coverImageFile) {
       const uploadResult = await uploadService.upload(coverImageFile, 'cover');
       safeData.coverImage = uploadResult.url;
     }
 
-    const user = await UserModel.update(userId, safeData);
-
-    if (!user) {
-      throw new NotFoundError('User not found');
+    // Split data between User and Profile
+    const userData = {};
+    if (safeData.name) {
+      userData.name = safeData.name;
+    }
+    if (safeData.email) {
+      userData.email = safeData.email.toLowerCase();
     }
 
-    return user;
+    const profileData = { ...safeData };
+    if (safeData.name) {
+      profileData.displayName = safeData.name;
+    }
+    delete profileData.name;
+    delete profileData.email;
+
+    const user = await UserModel.findByIdOrFail(userId);
+
+    // Update User table if needed
+    if (Object.keys(userData).length > 0) {
+      await UserModel.update(userId, userData);
+    }
+
+    // Update Role-specific Profile table
+    const modelMap = {
+      producer: ProducerModel,
+      artist: ArtistModel,
+      admin: AdminModel,
+    };
+
+    const Model = modelMap[user.role] || ArtistModel;
+    const profile = await Model.findByUserId(userId);
+
+    if (profile) {
+      await Model.update(profile.id, profileData);
+    } else {
+      // Create if doesn't exist (safety)
+      await Model.create({
+        userId: userId,
+        displayName: user.name,
+        ...profileData,
+      });
+    }
+
+    return this.getProfile(userId);
   }
 
   /**
@@ -393,6 +472,66 @@ export class AuthService {
 
       return true;
     });
+  }
+
+  /**
+   * Setup 2FA - generate secret and QR code
+   */
+  static async setup2FA(userId) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const secret = authenticator.generateSecret();
+
+    // Store secret temporarily (unverified)
+    await UserModel.update(userId, { mfaSecret: secret });
+
+    const otpauth = authenticator.keyuri(user.email, 'BeatBloom', secret);
+    const qrCode = await QRCode.toDataURL(otpauth);
+
+    return { secret, qrCode };
+  }
+
+  /**
+   * Verify and enable 2FA
+   */
+  static async verify2FA(userId, code) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    if (!user.mfaSecret) {
+      throw new BadRequestError('2FA setup not initiated');
+    }
+
+    const isValid = authenticator.verify({
+      token: code,
+      secret: user.mfaSecret,
+    });
+
+    if (!isValid) {
+      throw new BadRequestError('Invalid verification code');
+    }
+
+    // Generate 10 backup codes
+    const backupCodes = Array.from({ length: 10 }, () =>
+      crypto.randomBytes(4).toString('hex').toUpperCase()
+    );
+
+    await UserModel.enable2FA(userId, user.mfaSecret, backupCodes);
+
+    return { backupCodes };
+  }
+
+  /**
+   * Disable 2FA
+   */
+  static async disable2FA(userId) {
+    await UserModel.disable2FA(userId);
+    return true;
   }
 }
 

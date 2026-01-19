@@ -168,6 +168,34 @@ export class AuthController {
     await AuthService.deleteAccount(req.user.id);
     return ApiResponse.success(res, null, 'Account deleted successfully');
   });
+
+  /**
+   * Setup 2FA
+   * GET /auth/2fa/setup
+   */
+  static setup2FA = asyncHandler(async (req, res) => {
+    const result = await AuthService.setup2FA(req.user.id);
+    return ApiResponse.success(res, result);
+  });
+
+  /**
+   * Verify and enable 2FA
+   * POST /auth/2fa/verify
+   */
+  static verify2FA = asyncHandler(async (req, res) => {
+    const { code } = req.body;
+    const result = await AuthService.verify2FA(req.user.id, code);
+    return ApiResponse.success(res, result, '2FA enabled successfully');
+  });
+
+  /**
+   * Disable 2FA
+   * POST /auth/2fa/disable
+   */
+  static disable2FA = asyncHandler(async (req, res) => {
+    await AuthService.disable2FA(req.user.id);
+    return ApiResponse.success(res, null, '2FA disabled successfully');
+  });
 }
 
 export default AuthController;
