@@ -13,6 +13,7 @@ import activityRoutes from './activityRoutes.js';
 import playlistRoutes from './playlistRoutes.js';
 import orderRoutes from './orderRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import cartRoutes from './cartRoutes.js';
 
 const router = Router();
 
@@ -52,6 +53,9 @@ apiRouter.use('/activity', activityRoutes);
 
 // Playlist routes
 apiRouter.use('/playlists', playlistRoutes);
+
+// Cart routes
+apiRouter.use('/cart', cartRoutes);
 
 // Order routes
 apiRouter.use('/orders', orderRoutes);
