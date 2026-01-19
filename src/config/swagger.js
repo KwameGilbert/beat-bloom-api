@@ -159,11 +159,11 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://${env.HOST}:${env.PORT}/api/${env.API_VERSION}`,
+        url: `http://${env.HOST}:${env.PORT}/api`,
         description: 'Development server',
       },
       {
-        url: `/api/${env.API_VERSION}`,
+        url: '/api',
         description: 'Current environment',
       },
     ],

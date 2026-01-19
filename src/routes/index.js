@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { env } from '../config/env.js';
 import { rateLimiter } from '../middlewares/rateLimiter.js';
 
 // Import route modules
@@ -16,26 +15,23 @@ const router = Router();
 router.use('/health', healthRoutes);
 
 /**
- * API v1 routes
+ * API routes
  */
-const v1Router = Router();
+const apiRouter = Router();
 
 // Apply rate limiter to all API routes
-v1Router.use(rateLimiter);
+apiRouter.use(rateLimiter);
 
 // API Documentation
-v1Router.use('/docs', docsRoutes);
+apiRouter.use('/docs', docsRoutes);
 
 // Auth routes
-v1Router.use('/auth', authRoutes);
+apiRouter.use('/auth', authRoutes);
 
 // User management routes
-v1Router.use('/users', userRoutes);
+apiRouter.use('/users', userRoutes);
 
-// Mount v1 routes
-router.use(`/api/${env.API_VERSION}`, v1Router);
-
-// Legacy support - also mount at /api
-router.use('/api', v1Router);
+// Mount API routes
+router.use('/api', apiRouter);
 
 export default router;

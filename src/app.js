@@ -68,8 +68,7 @@ const createApp = () => {
     res.json({
       success: true,
       message: `Welcome to ${env.APP_NAME}`,
-      version: env.API_VERSION,
-      documentation: `/api/${env.API_VERSION}/docs`,
+      documentation: '/api/docs',
     });
   });
 

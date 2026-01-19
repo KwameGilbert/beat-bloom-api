@@ -117,7 +117,7 @@ class EmailService {
    * Send verification email
    */
   async sendVerificationEmail(to, name, token) {
-    const url = `${env.APP_URL || 'http://localhost:3000'}/api/${env.API_VERSION}/auth/verify-email?token=${token}`;
+    const url = `${env.APP_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${token}`;
 
     const content = `
       <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Verify Your Email</h2>

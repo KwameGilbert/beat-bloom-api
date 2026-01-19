@@ -8,7 +8,7 @@ const router = Router();
 
 /**
  * User Management Routes (Admin only)
- * Base path: /api/v1/users
+ * Base path: /api/users
  *
  * These routes are for admin management of users.
  * Regular users manage their own profile via /auth/me
