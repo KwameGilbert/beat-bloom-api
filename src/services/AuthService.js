@@ -12,7 +12,7 @@ import {
   NotFoundError,
 } from '../utils/errors.js';
 import { uploadService } from './UploadService.js';
-import { authenticator } from 'otplib';
+import { authenticator } from '@otplib/preset-default';
 import QRCode from 'qrcode';
 import crypto from 'crypto';
 
