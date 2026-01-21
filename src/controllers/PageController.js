@@ -19,8 +19,8 @@ export const PageController = {
     // 1. Trending Beats
     const trending = await BeatModel.findTrending(12);
 
-    // 2. Genres
-    const genres = await GenreModel.findAll({ limit: 12, sortBy: 'name', sortOrder: 'asc' });
+    // 2. Genres (with beat counts)
+    const genres = await GenreModel.findActive();
 
     // 3. Featured Producers (Verified ones or top sellers)
     const featuredProducers = await ProducerModel.findAll({
@@ -33,7 +33,7 @@ export const PageController = {
       res,
       {
         trendingBeats: trending,
-        genres: genres.data,
+        genres: genres,
         featuredProducers: featuredProducers.data,
       },
       'Home page data retrieved'
