@@ -17,6 +17,7 @@ import cartRoutes from './cartRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
 import pageRoutes from './pageRoutes.js';
 import paymentRoutes from './paymentRoutes.js';
+import oauthRoutes from './oauthRoutes.js';
 
 const router = Router();
 
@@ -38,6 +39,9 @@ apiRouter.use('/docs', docsRoutes);
 
 // Auth routes
 apiRouter.use('/auth', authRoutes);
+
+// OAuth routes (Google, Discord, etc.)
+apiRouter.use('/auth', oauthRoutes);
 
 // User management routes
 apiRouter.use('/users', userRoutes);
