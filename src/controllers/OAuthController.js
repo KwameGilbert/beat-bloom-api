@@ -27,7 +27,6 @@ export const OAuthController = {
       // User denied access or other error
       return res.redirect(`${oauthConfig.oauth.frontendUrl}/login?error=oauth_denied`);
     }
-
     if (!code) {
       return res.redirect(`${oauthConfig.oauth.frontendUrl}/login?error=no_code`);
     }
