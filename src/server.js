@@ -9,7 +9,7 @@ import { testConnection, closeConnections } from './config/database.js';
 const startServer = async () => {
   try {
     // Test database connection
-    await testConnection();
+    // await testConnection();
 
     // Start HTTP server
     const server = app.listen(env.PORT, env.HOST, () => {
@@ -33,14 +33,14 @@ const startServer = async () => {
       server.close(async () => {
         logger.info('HTTP server closed');
 
-        try {
-          await closeConnections();
-          logger.info('Database connections closed');
-          process.exit(0);
-        } catch (error) {
-          logger.error({ error: error.message }, 'Error during shutdown');
-          process.exit(1);
-        }
+        // try {
+        //   await closeConnections();
+        //   logger.info('Database connections closed');
+        //   process.exit(0);
+        // } catch (error) {
+        //   logger.error({ error: error.message }, 'Error during shutdown');
+        //   process.exit(1);
+        // }
       });
 
       // Force shutdown after 30 seconds
