@@ -196,6 +196,23 @@ export class AuthController {
     await AuthService.disable2FA(req.user.id);
     return ApiResponse.success(res, null, '2FA disabled successfully');
   });
+  /**
+   * Check username availability
+   * GET /auth/check-username?username=...
+   */
+  static checkUsername = asyncHandler(async (req, res) => {
+    const { username } = req.query;
+    if (!username) {
+      return ApiResponse.badRequest(res, 'Username is required');
+    }
+
+    const { available } = await AuthService.checkUsernameAvailability(username);
+    return ApiResponse.success(
+      res,
+      { available },
+      `Username is ${available ? 'available' : 'taken'}`
+    );
+  });
 }
 
 export default AuthController;

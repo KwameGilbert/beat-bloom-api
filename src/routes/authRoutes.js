@@ -9,6 +9,13 @@ import { upload } from '../middlewares/upload.js';
 const router = Router();
 
 /**
+ * @route GET /auth/check-username
+ * @desc Check username availability
+ * @access Public
+ */
+router.get('/check-username', AuthController.checkUsername);
+
+/**
  * @route POST /auth/register
  * @desc Register a new user
  * @access Public

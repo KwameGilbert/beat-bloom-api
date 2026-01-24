@@ -1,4 +1,5 @@
 import { PlatformSettingsService } from '../services/PlatformSettingsService.js';
+import { emailService } from '../services/EmailService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { successResponse } from '../utils/response.js';
 
@@ -66,6 +67,18 @@ export const PlatformSettingsController = {
     const { key } = req.params;
     await PlatformSettingsService.delete(key);
     return successResponse(res, null, 'Setting deleted successfully');
+  }),
+
+  /**
+   * Send a test email (admin only)
+   */
+  testEmail: asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    const result = await emailService.sendTestEmail(email);
+    return successResponse(res, result, 'Test email sent successfully');
   }),
 };
 

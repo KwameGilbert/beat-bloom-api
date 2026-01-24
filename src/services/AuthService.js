@@ -533,6 +533,16 @@ export class AuthService {
     await UserModel.disable2FA(userId);
     return true;
   }
+  /**
+   * Check if a username is available
+   */
+  static async checkUsernameAvailability(username) {
+    const producer = await ProducerModel.findByUsername(username);
+    return {
+      available: !producer,
+      username,
+    };
+  }
 }
 
 export default AuthService;

@@ -318,6 +318,34 @@ class EmailService {
       text: `Payout ${payout.status}: $${payout.amount.toFixed(2)} to ${payout.method}`,
     });
   }
+
+  /**
+   * Send a test email to verify configuration
+   */
+  async sendTestEmail(to) {
+    const content = `
+      <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Test Email Successful! 🚀</h2>
+      <p style="color:#a3a3a3;margin:0 0 24px;font-size:16px;line-height:1.6;">
+        If you're reading this, your BeatBloom email configuration is working perfectly!
+      </p>
+      <div style="background:#262626;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #22c55e;">
+        <p style="color:#fafafa;margin:0;font-weight:600;">Configuration Details:</p>
+        <ul style="color:#a3a3a3;margin:8px 0 0;font-size:14px;padding-left:20px;">
+          <li>Host: ${env.EMAIL_HOST}</li>
+          <li>User: ${env.EMAIL_USER}</li>
+          <li>From: ${this.from}</li>
+          <li>Time: ${new Date().toLocaleString()}</li>
+        </ul>
+      </div>
+    `;
+
+    return this.send({
+      to,
+      subject: `Test Email - BeatBloom Configuration`,
+      html: this.getEmailTemplate(content),
+      text: `Your BeatBloom email configuration is working! Host: ${env.EMAIL_HOST}`,
+    });
+  }
 }
 
 export const emailService = new EmailService();

@@ -69,7 +69,7 @@ const envSchema = z.object({
 
   // Email (SMTP)
   EMAIL_HOST: z.string().optional(),
-  EMAIL_PORT: z.string().transform(Number).optional(),
+  EMAIL_PORT: z.preprocess((val) => val || undefined, z.string().transform(Number).optional()),
   EMAIL_SECURE: z.string().optional(),
   EMAIL_USER: z.string().optional(),
   EMAIL_PASSWORD: z.string().optional(),

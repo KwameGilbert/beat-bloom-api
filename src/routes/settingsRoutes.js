@@ -41,4 +41,12 @@ router.delete(
   PlatformSettingsController.deleteSetting
 );
 
+// Test email configuration
+router.post(
+  '/test/email',
+  authenticate,
+  requireRole('admin'),
+  PlatformSettingsController.testEmail
+);
+
 export default router;
