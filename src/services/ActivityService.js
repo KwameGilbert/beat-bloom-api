@@ -61,9 +61,9 @@ export const ActivityService = {
   async recordPlay(userId, beatId, details = {}) {
     const entry = {
       beatId,
-      sessionId: details.sessionId || null,
       playDurationSeconds: details.duration || 0,
       playedAt: new Date(),
+      sessionId: details.sessionId || null
     };
 
     // Only include userId if it exists (authenticated user)
