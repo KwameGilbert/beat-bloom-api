@@ -93,8 +93,7 @@ class UserModelClass extends BaseModel {
    * Get user's producer profile if exists
    */
   async getProducerProfile(userId) {
-    const { db } = await import('../database/connection.js');
-    return db('producers').where('userId', userId).first();
+    return this.getConnection()('producers').where('userId', userId).first();
   }
 
   /**

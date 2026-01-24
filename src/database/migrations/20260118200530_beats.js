@@ -32,7 +32,7 @@ export const up = async function (knex) {
     table.timestamp('publishedAt');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
-    table.timestamp('deletedAt'); // Soft delete
+    table.timestamp('deletedAt').defaultTo(knex.fn.now()); // Soft delete
 
     // Indexes
     table.unique(['producerId', 'slug']);

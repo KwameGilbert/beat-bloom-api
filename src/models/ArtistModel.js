@@ -6,7 +6,7 @@ import { BaseModel } from './BaseModel.js';
 class ArtistModel extends BaseModel {
   constructor() {
     super('artists', {
-      searchableFields: ['displayName', 'bio', 'location'],
+      searchableFields: ['username', 'displayName', 'bio', 'location'],
       sortableFields: ['createdAt', 'updatedAt', 'displayName'],
     });
   }

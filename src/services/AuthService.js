@@ -69,31 +69,40 @@ export class AuthService {
       await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
     }
 
+    // Generate unique username
+    const baseUsername =
+      email
+        .split('@')[0]
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '') + Math.floor(Math.random() * 1000);
+
     // Create profile record based on role
     if (role === 'producer') {
       await ProducerModel.create({
         userId: user.id,
-        username: email.split('@')[0].toLowerCase() + Math.floor(Math.random() * 1000),
+        username: baseUsername,
         displayName: name,
       });
     } else if (role === 'admin') {
       await AdminModel.create({
         userId: user.id,
+        username: baseUsername,
         displayName: name,
       });
     } else {
       // Default to artist
       await ArtistModel.create({
         userId: user.id,
+        username: baseUsername,
         displayName: name,
       });
     }
 
-    // Remove password from response
-    const { password: _pw, ...userWithoutPassword } = user;
+    // Get full profile including merged data
+    const fullUser = await this.getProfile(user.id);
 
     return {
-      user: userWithoutPassword,
+      user: fullUser,
       ...tokens,
       message: 'Registration successful. Please check your email to verify your account.',
     };
@@ -115,6 +124,12 @@ export class AuthService {
     }
 
     // Verify password
+    if (!user.password) {
+      throw new UnauthorizedError(
+        'This account does not have a password. Please sign in with your social provider.'
+      );
+    }
+
     const isValidPassword = await UserModel.comparePassword(password, user.password);
 
     if (!isValidPassword) {
@@ -140,11 +155,11 @@ export class AuthService {
       await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
     }
 
-    // Remove password from response
-    const { password: _pw, ...userWithoutPassword } = user;
+    // Get full profile including merged data
+    const fullUser = await this.getProfile(user.id);
 
     return {
-      user: userWithoutPassword,
+      user: fullUser,
       ...tokens,
     };
   }
@@ -355,10 +370,11 @@ export class AuthService {
       mergedUser.bio = profile.bio;
       mergedUser.location = profile.location;
       mergedUser.website = profile.website;
-      if (user.role === 'producer') {
-        mergedUser.username = profile.username;
-        mergedUser.displayName = profile.displayName;
-      }
+      mergedUser.username = profile.username;
+      mergedUser.displayName = profile.displayName || user.name;
+
+      // Keep profile object for easier access
+      mergedUser.profile = profile;
     }
 
     return mergedUser;
@@ -428,11 +444,22 @@ export class AuthService {
       await Model.update(profile.id, profileData);
     } else {
       // Create if doesn't exist (safety)
-      await Model.create({
+      const newProfileData = {
         userId: userId,
         displayName: user.name,
         ...profileData,
-      });
+      };
+
+      // Generate username if missing for any role
+      if (!newProfileData.username) {
+        newProfileData.username =
+          user.email
+            .split('@')[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '') + Math.floor(Math.random() * 1000);
+      }
+
+      await Model.create(newProfileData);
     }
 
     return this.getProfile(userId);
@@ -542,6 +569,32 @@ export class AuthService {
       available: !producer,
       username,
     };
+  }
+
+  /**
+   * Upgrade user to producer
+   */
+  static async upgradeToProducer(userId) {
+    const user = await UserModel.findByIdOrFail(userId);
+
+    if (user.role === 'producer') {
+      return this.getProfile(userId);
+    }
+
+    // Update user role
+    await UserModel.update(userId, { role: 'producer' });
+
+    // Create producer profile if doesn't exist
+    const profile = await ProducerModel.findByUserId(userId);
+    if (!profile) {
+      await ProducerModel.create({
+        userId,
+        username: user.email.split('@')[0].toLowerCase() + Math.floor(Math.random() * 1000),
+        displayName: user.name,
+      });
+    }
+
+    return this.getProfile(userId);
   }
 }
 

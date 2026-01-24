@@ -151,4 +151,6 @@ router.get('/2fa/setup', authenticate, AuthController.setup2FA);
 router.post('/2fa/verify', authenticate, AuthController.verify2FA);
 router.post('/2fa/disable', authenticate, AuthController.disable2FA);
 
+router.post('/upgrade', authenticate, AuthController.upgradeToProducer);
+
 export default router;

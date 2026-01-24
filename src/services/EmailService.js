@@ -117,7 +117,7 @@ class EmailService {
    * Send verification email
    */
   async sendVerificationEmail(to, name, token) {
-    const url = `${env.APP_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${token}`;
+    const url = `${env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${token}`;
 
     const content = `
       <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Verify Your Email</h2>
@@ -149,7 +149,7 @@ class EmailService {
    * Send password reset email
    */
   async sendPasswordResetEmail(to, name, token) {
-    const url = `${env.APP_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
+    const url = `${env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
 
     const content = `
       <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Reset Your Password</h2>
@@ -197,7 +197,7 @@ class EmailService {
         </ul>
       </div>
       <div style="text-align:center;">
-        ${this.getButton('Start Browsing', env.APP_URL || 'http://localhost:5173')}
+        ${this.getButton('Start Browsing', env.FRONTEND_URL || 'http://localhost:5173')}
       </div>
     `;
 
@@ -274,7 +274,7 @@ class EmailService {
         </table>
       </div>
       <div style="text-align:center;">
-        ${this.getButton('Download Beats', `${env.APP_URL || 'http://localhost:5173'}/purchases`)}
+        ${this.getButton('Download Beats', `${env.FRONTEND_URL || 'http://localhost:5173'}/purchases`)}
       </div>
     `;
 

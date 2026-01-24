@@ -6,7 +6,7 @@ import { BaseModel } from './BaseModel.js';
 class AdminModel extends BaseModel {
   constructor() {
     super('admins', {
-      searchableFields: ['displayName', 'bio'],
+      searchableFields: ['username', 'displayName', 'bio'],
       sortableFields: ['createdAt', 'updatedAt', 'displayName'],
     });
   }

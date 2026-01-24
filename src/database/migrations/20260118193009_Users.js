@@ -17,8 +17,8 @@ export const up = async function (knex) {
     table.string('mfaSecret', 255);
     table.jsonb('mfaBackupCodes').defaultTo('[]'); // Backup codes for 2FA
     table.string('passwordResetToken', 255);
-    table.timestamp('passwordResetExpires');
-    table.timestamp('lastLoginAt');
+    table.timestamp('passwordResetExpires').nullable();
+    table.timestamp('lastLoginAt').nullable();
 
     // User Preferences (from Settings page)
     table.boolean('emailNotifications').defaultTo(true);
@@ -30,7 +30,7 @@ export const up = async function (knex) {
     table.jsonb('metadata').defaultTo('{}');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
-    table.timestamp('deletedAt'); // Soft delete
+    table.timestamp('deletedAt').nullable(); // Soft delete
 
     // Indexes
     table.index('email');

@@ -40,7 +40,7 @@ export const up = async function (knex) {
     table.enum('type', ['emailVerification', 'passwordReset', 'mfaSetup']).notNullable();
     table.string('token', 255).notNullable();
     table.timestamp('expiresAt').notNullable();
-    table.timestamp('usedAt');
+    table.timestamp('usedAt').nullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());
 
     // Indexes

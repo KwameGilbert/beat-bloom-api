@@ -213,6 +213,15 @@ export class AuthController {
       `Username is ${available ? 'available' : 'taken'}`
     );
   });
+
+  /**
+   * Upgrade user to producer
+   * POST /auth/upgrade
+   */
+  static upgradeToProducer = asyncHandler(async (req, res) => {
+    const user = await AuthService.upgradeToProducer(req.user.id);
+    return ApiResponse.success(res, user, 'Upgraded to producer successfully');
+  });
 }
 
 export default AuthController;

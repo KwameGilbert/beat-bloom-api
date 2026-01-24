@@ -55,6 +55,11 @@ class PasswordHasher {
    * @returns {Promise<boolean>} True if password matches
    */
   async verify(password, hash) {
+    // If no hash is provided, verification fails
+    if (!hash) {
+      return false;
+    }
+
     // Detect algorithm from hash format
     const algorithm = this.detectAlgorithm(hash);
 

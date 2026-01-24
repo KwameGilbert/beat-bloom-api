@@ -139,15 +139,15 @@ export const PageController = {
         `${profileTable}.coverImage`,
         `${profileTable}.bio`,
         `${profileTable}.location`,
-        `${profileTable}.website`
+        `${profileTable}.website`,
+        `${profileTable}.displayName`,
+        `${profileTable}.username`
       )
       .where('users.id', userId)
       .first();
 
-    // Add extra field for producer role
-    if (userBase.role === 'producer') {
-      const producer = await db('producers').where('userId', userId).select('username').first();
-      user.producerUsername = producer?.username;
+    if (user && !user.displayName) {
+      user.displayName = user.name;
     }
 
     // 2. Purchased Beats
