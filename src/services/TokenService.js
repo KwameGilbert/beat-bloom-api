@@ -63,12 +63,52 @@ class TokenServiceClass {
   }
 
   /**
+   * Create password reset OTP (6 digits)
+   */
+  async createPasswordResetOTP(userId) {
+    // Invalidate old tokens first
+    await this.invalidateUserTokens(userId, 'passwordResetOTP');
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes is better for OTP
+
+    await db('authTokens').insert({
+      userId,
+      type: 'passwordResetOTP',
+      token: otp,
+      expiresAt,
+    });
+
+    return { otp, expiresAt };
+  }
+
+  /**
    * Verify password reset token
    */
   async verifyPasswordResetToken(token) {
     const record = await db('authTokens')
       .where('token', token)
       .where('type', 'passwordReset')
+      .whereNull('usedAt')
+      .where('expiresAt', '>', new Date())
+      .first();
+
+    if (record) {
+      // Mark as used
+      await db('authTokens').where('id', record.id).update({ usedAt: new Date() });
+    }
+
+    return record;
+  }
+
+  /**
+   * Verify password reset OTP
+   */
+  async verifyPasswordResetOTP(userId, otp) {
+    const record = await db('authTokens')
+      .where('userId', userId)
+      .where('token', otp)
+      .where('type', 'passwordResetOTP')
       .whereNull('usedAt')
       .where('expiresAt', '>', new Date())
       .first();

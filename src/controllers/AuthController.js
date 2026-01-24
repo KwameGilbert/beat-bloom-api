@@ -87,27 +87,27 @@ export class AuthController {
   });
 
   /**
-   * Request password reset
+   * Request password reset (OTP)
    * POST /auth/forgot-password
    */
   static forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
-    await AuthService.requestPasswordReset(email);
+    await AuthService.requestPasswordResetOTP(email);
 
     return ApiResponse.success(
       res,
       null,
-      'If an account exists with this email, you will receive a password reset link'
+      'If an account exists with this email, you will receive a verification code'
     );
   });
 
   /**
-   * Reset password with token
+   * Reset password with OTP
    * POST /auth/reset-password
    */
   static resetPassword = asyncHandler(async (req, res) => {
-    const { token, password } = req.body;
-    await AuthService.resetPassword(token, password);
+    const { email, otp, password } = req.body;
+    await AuthService.resetPasswordWithOTP(email, otp, password);
 
     return ApiResponse.success(res, null, 'Password reset successfully');
   });

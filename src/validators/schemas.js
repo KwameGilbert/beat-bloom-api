@@ -49,7 +49,8 @@ export const authSchemas = {
   }),
 
   resetPassword: z.object({
-    token: z.string().min(1, 'Reset token is required'),
+    email: z.string().email('Invalid email address'),
+    otp: z.string().length(6, 'Verification code must be 6 digits'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
   }),
 

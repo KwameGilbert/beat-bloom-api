@@ -178,6 +178,35 @@ class EmailService {
   }
 
   /**
+   * Send password reset OTP email
+   */
+  async sendForgotPasswordOTPEmail(to, name, otp) {
+    const content = `
+      <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Reset Your Password</h2>
+      <p style="color:#a3a3a3;margin:0 0 24px;font-size:16px;line-height:1.6;">
+        Hi ${name},<br><br>
+        We received a request to reset your password. Use the verification code below to proceed:
+      </p>
+      <div style="background:#262626;border-radius:12px;padding:32px;margin:24px 0;text-align:center;">
+        <h1 style="color:#ea580c;margin:0;font-size:48px;letter-spacing:12px;font-family:monospace;font-weight:700;">${otp}</h1>
+      </div>
+      <p style="color:#737373;margin:24px 0 0;font-size:14px;text-align:center;">
+        This code expires in 15 minutes.
+      </p>
+      <p style="color:#525252;margin:16px 0 0;font-size:12px;text-align:center;">
+        If you didn't request this, you can safely ignore this email.
+      </p>
+    `;
+
+    return this.send({
+      to,
+      subject: `${otp} is your verification code - BeatBloom`,
+      html: this.getEmailTemplate(content),
+      text: `Hi ${name}, your password reset code is: ${otp}`,
+    });
+  }
+
+  /**
    * Send welcome email
    */
   async sendWelcomeEmail(to, name) {

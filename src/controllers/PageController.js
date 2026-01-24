@@ -1,6 +1,7 @@
 import { BeatModelInstance as BeatModel } from '../models/BeatModel.js';
 import { GenreModelInstance as GenreModel } from '../models/GenreModel.js';
 import { ProducerModelInstance as ProducerModel } from '../models/ProducerModel.js';
+import { UserModel } from '../models/UserModel.js';
 import { OrderService } from '../services/OrderService.js';
 import { db } from '../config/database.js';
 import { successResponse } from '../utils/response.js';
@@ -110,8 +111,8 @@ export const PageController = {
   getProfilePage: asyncHandler(async (req, res) => {
     const userId = req.user.id;
 
-    // 1. Get user with basic info
-    const userBase = await db('users').where('id', userId).first();
+    // 1. Get user with basic info using UserModel to handle soft deletes and hidden fields
+    const userBase = await UserModel.findById(userId);
 
     if (!userBase) {
       throw new NotFoundError('User not found');
@@ -141,7 +142,9 @@ export const PageController = {
         `${profileTable}.location`,
         `${profileTable}.website`,
         `${profileTable}.displayName`,
-        `${profileTable}.username`
+        `${profileTable}.username`,
+        `${profileTable}.twitter`,
+        `${profileTable}.instagram`
       )
       .where('users.id', userId)
       .first();

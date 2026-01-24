@@ -313,6 +313,26 @@ export class AuthService {
   }
 
   /**
+   * Request password reset with OTP
+   */
+  static async requestPasswordResetOTP(email) {
+    const user = await UserModel.findByEmail(email.toLowerCase());
+
+    if (!user) {
+      // Don't reveal if user exists
+      return true;
+    }
+
+    // Create OTP using TokenService
+    const { otp } = await tokenService.createPasswordResetOTP(user.id);
+
+    // Send OTP email
+    await emailService.sendForgotPasswordOTPEmail(user.email, user.name, otp);
+
+    return true;
+  }
+
+  /**
    * Reset password with token
    */
   static async resetPassword(token, newPassword) {
@@ -326,6 +346,37 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundError('User not found');
+    }
+
+    await UserModel.update(user.id, {
+      password: newPassword,
+    });
+
+    // Revoke all refresh tokens
+    await tokenService.revokeAllUserRefreshTokens(user.id);
+
+    // Send notification
+    emailService
+      .sendPasswordChangedEmail(user.email, user.name)
+      .catch((err) => console.error('Failed to send password changed email:', err.message));
+
+    return true;
+  }
+
+  /**
+   * Reset password with OTP
+   */
+  static async resetPasswordWithOTP(email, otp, newPassword) {
+    const user = await UserModel.findByEmail(email.toLowerCase());
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const tokenRecord = await tokenService.verifyPasswordResetOTP(user.id, otp);
+
+    if (!tokenRecord) {
+      throw new BadRequestError('Invalid or expired verification code');
     }
 
     await UserModel.update(user.id, {
@@ -372,6 +423,8 @@ export class AuthService {
       mergedUser.website = profile.website;
       mergedUser.username = profile.username;
       mergedUser.displayName = profile.displayName || user.name;
+      mergedUser.twitter = profile.twitter || null;
+      mergedUser.instagram = profile.instagram || null;
 
       // Keep profile object for easier access
       mergedUser.profile = profile;
@@ -581,20 +634,54 @@ export class AuthService {
       return this.getProfile(userId);
     }
 
-    // Update user role
-    await UserModel.update(userId, { role: 'producer' });
+    return UserModel.getConnection().transaction(async (trx) => {
+      // 1. Get current artist profile to copy data from
+      const artistProfile = await trx('artists').where('userId', userId).first();
 
-    // Create producer profile if doesn't exist
-    const profile = await ProducerModel.findByUserId(userId);
-    if (!profile) {
-      await ProducerModel.create({
-        userId,
-        username: user.email.split('@')[0].toLowerCase() + Math.floor(Math.random() * 1000),
-        displayName: user.name,
+      // 2. Update user role
+      await trx('users').where('id', userId).update({
+        role: 'producer',
+        updatedAt: new Date(),
       });
-    }
 
-    return this.getProfile(userId);
+      // 3. Prepare producer data from artist profile or user defaults
+      const producerData = {
+        username:
+          artistProfile?.username ||
+          user.email.split('@')[0].toLowerCase() + Math.floor(Math.random() * 1000),
+        displayName: artistProfile?.displayName || user.name,
+        bio: artistProfile?.bio || null,
+        location: artistProfile?.location || null,
+        website: artistProfile?.website || null,
+        avatar: artistProfile?.avatar || null,
+        coverImage: artistProfile?.coverImage || null,
+        twitter: artistProfile?.twitter || null,
+        instagram: artistProfile?.instagram || null,
+        updatedAt: new Date(),
+      };
+
+      // 4. Create or update producer profile
+      const existingProducer = await trx('producers').where('userId', userId).first();
+
+      if (existingProducer) {
+        await trx('producers').where('id', existingProducer.id).update(producerData);
+      } else {
+        await trx('producers').insert({
+          ...producerData,
+          userId,
+          createdAt: new Date(),
+          isVerified: false,
+          isActive: true,
+        });
+      }
+
+      // 5. Delete old artist profile
+      if (artistProfile) {
+        await trx('artists').where('userId', userId).del();
+      }
+
+      return this.getProfile(userId);
+    });
   }
 }
 
