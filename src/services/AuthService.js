@@ -364,6 +364,33 @@ export class AuthService {
   }
 
   /**
+   * Verify password reset OTP
+   */
+  static async verifyPasswordResetOTP(email, otp) {
+    const user = await UserModel.findByEmail(email.toLowerCase());
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const tokenRecord = await tokenService.checkPasswordResetOTP(user.id, otp);
+
+    if (!tokenRecord) {
+      throw new BadRequestError('Invalid or expired verification code');
+    }
+
+    return true;
+  }
+
+  /**
+   * Resend password reset OTP
+   */
+  static async resendForgotPasswordOTP(email) {
+    // This is essentially same as requestPasswordResetOTP but explicitly named for clarity
+    return this.requestPasswordResetOTP(email);
+  }
+
+  /**
    * Reset password with OTP
    */
   static async resetPasswordWithOTP(email, otp, newPassword) {

@@ -67,14 +67,14 @@ class TokenServiceClass {
    */
   async createPasswordResetOTP(userId) {
     // Invalidate old tokens first
-    await this.invalidateUserTokens(userId, 'passwordResetOTP');
+    await this.invalidateUserTokens(userId, 'passwordReset');
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes is better for OTP
 
     await db('authTokens').insert({
       userId,
-      type: 'passwordResetOTP',
+      type: 'passwordReset',
       token: otp,
       expiresAt,
     });
@@ -108,7 +108,7 @@ class TokenServiceClass {
     const record = await db('authTokens')
       .where('userId', userId)
       .where('token', otp)
-      .where('type', 'passwordResetOTP')
+      .where('type', 'passwordReset')
       .whereNull('usedAt')
       .where('expiresAt', '>', new Date())
       .first();
@@ -117,6 +117,21 @@ class TokenServiceClass {
       // Mark as used
       await db('authTokens').where('id', record.id).update({ usedAt: new Date() });
     }
+
+    return record;
+  }
+
+  /**
+   * Check if password reset OTP is valid without marking it as used
+   */
+  async checkPasswordResetOTP(userId, otp) {
+    const record = await db('authTokens')
+      .where('userId', userId)
+      .where('token', otp)
+      .where('type', 'passwordReset')
+      .whereNull('usedAt')
+      .where('expiresAt', '>', new Date())
+      .first();
 
     return record;
   }

@@ -119,6 +119,25 @@ router.post(
 );
 
 /**
+ * @route POST /auth/verify-otp
+ * @desc Verify password reset OTP
+ * @access Public
+ */
+router.post('/verify-otp', authRateLimiter, AuthController.verifyOTP);
+
+/**
+ * @route POST /auth/resend-otp
+ * @desc Resend password reset OTP
+ * @access Public
+ */
+router.post(
+  '/resend-otp',
+  authRateLimiter,
+  validateBody(authSchemas.forgotPassword),
+  AuthController.resendOTP
+);
+
+/**
  * @route POST /auth/reset-password
  * @desc Reset password with token
  * @access Public

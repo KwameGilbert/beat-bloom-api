@@ -102,6 +102,38 @@ export class AuthController {
   });
 
   /**
+   * Verify password reset OTP
+   * POST /auth/verify-otp
+   */
+  static verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return ApiResponse.badRequest(res, 'Email and OTP are required');
+    }
+
+    await AuthService.verifyPasswordResetOTP(email, otp);
+
+    return ApiResponse.success(res, null, 'OTP verified successfully');
+  });
+
+  /**
+   * Resend password reset OTP
+   * POST /auth/resend-otp
+   */
+  static resendOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return ApiResponse.badRequest(res, 'Email is required');
+    }
+
+    await AuthService.resendForgotPasswordOTP(email);
+
+    return ApiResponse.success(res, null, 'Verification code resent successfully');
+  });
+
+  /**
    * Reset password with OTP
    * POST /auth/reset-password
    */

@@ -37,7 +37,7 @@ export const up = async function (knex) {
       .references('id')
       .inTable('users')
       .onDelete('CASCADE');
-    table.enum('type', ['emailVerification', 'passwordReset', 'mfaSetup']).notNullable();
+    table.enum('type', ['emailVerification', 'passwordReset', 'passwordResetOTP', 'mfaSetup']).notNullable();
     table.string('token', 255).notNullable();
     table.timestamp('expiresAt').notNullable();
     table.timestamp('usedAt').nullable();
