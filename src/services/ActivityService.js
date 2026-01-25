@@ -43,7 +43,7 @@ export const ActivityService = {
     const page = parseInt(options.page) || 1;
     const offset = (page - 1) * limit;
 
-    const countQuery = query.clone();
+    const countQuery = query.clone().clearSelect().clearOrder();
     const countResult = await countQuery.count('beats.id as count').first();
     const total = parseInt(countResult.count);
 
@@ -63,7 +63,7 @@ export const ActivityService = {
       beatId,
       playDurationSeconds: details.duration || 0,
       playedAt: new Date(),
-      sessionId: details.sessionId || null
+      sessionId: details.sessionId || null,
     };
 
     // Only include userId if it exists (authenticated user)
@@ -98,7 +98,7 @@ export const ActivityService = {
     const page = parseInt(options.page) || 1;
     const offset = (page - 1) * limit;
 
-    const countQuery = query.clone();
+    const countQuery = query.clone().clearSelect().clearOrder();
     const countResult = await countQuery.count('playHistory.id as count').first();
     const total = parseInt(countResult.count);
 

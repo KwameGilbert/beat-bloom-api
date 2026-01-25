@@ -21,7 +21,7 @@ export const authenticate = async (req, res, next) => {
 
     // Attach user to request
     req.user = {
-      id: decoded.sub || decoded.id,
+      id: Number(decoded.sub || decoded.id),
       email: decoded.email,
       role: decoded.role,
     };
@@ -50,7 +50,7 @@ export const optionalAuth = async (req, res, next) => {
       const decoded = jwt.verify(token, env.JWT_SECRET);
 
       req.user = {
-        id: decoded.sub || decoded.id,
+        id: Number(decoded.sub || decoded.id),
         email: decoded.email,
         role: decoded.role,
       };

@@ -153,6 +153,22 @@ export const BeatService = {
         await trx('licenseTiers').insert(tiers);
       }
 
+      // Associate files if provided
+      if (data.files && data.files.length > 0) {
+        const beatFiles = data.files.map((file) => ({
+          beatId: beat.id,
+          fileType: file.fileType,
+          fileName: file.fileName,
+          filePath: file.filePath,
+          mimeType: file.mimeType,
+          fileSize: file.fileSize,
+          storageProvider: file.storageProvider || 'local',
+          isPublic: file.fileType === 'preview',
+          createdAt: new Date(),
+        }));
+        await trx('beatFiles').insert(beatFiles);
+      }
+
       return this.getBeat(beat.id);
     });
   },

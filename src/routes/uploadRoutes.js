@@ -13,11 +13,25 @@ router.use(authenticate);
 /**
  * @route POST /api/upload/single
  */
-router.post('/single', upload('general').single('file'), UploadController.uploadSingle);
+router.post(
+  '/single',
+  (req, res, next) => {
+    const group = req.query.group || 'general';
+    return upload(group).single('file')(req, res, next);
+  },
+  UploadController.uploadSingle
+);
 
 /**
  * @route POST /api/upload/many
  */
-router.post('/many', upload('general').array('files', 10), UploadController.uploadMany);
+router.post(
+  '/many',
+  (req, res, next) => {
+    const group = req.query.group || 'general';
+    return upload(group).array('files', 10)(req, res, next);
+  },
+  UploadController.uploadMany
+);
 
 export default router;

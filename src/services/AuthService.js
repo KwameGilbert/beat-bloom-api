@@ -707,7 +707,26 @@ export class AuthService {
         await trx('artists').where('userId', userId).del();
       }
 
-      return this.getProfile(userId);
+      const fullUser = await this.getProfile(userId);
+
+      // 6. Generate new tokens because the role has changed
+      const tokenPayload = {
+        id: fullUser.id,
+        email: fullUser.email,
+        role: fullUser.role,
+      };
+
+      const tokens = generateTokens(tokenPayload);
+
+      // Store new refresh token
+      if (tokens.refreshToken) {
+        await tokenService.storeRefreshToken(userId, tokens.refreshToken);
+      }
+
+      return {
+        user: fullUser,
+        ...tokens,
+      };
     });
   }
 }

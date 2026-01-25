@@ -6,6 +6,8 @@
 // Default file size limits (in bytes)
 export const MAX_FILE_SIZES = {
   image: 5 * 1024 * 1024, // 5MB
+  audio: 100 * 1024 * 1024, // 100MB
+  archive: 500 * 1024 * 1024, // 500MB
   document: 10 * 1024 * 1024, // 10MB
   video: 50 * 1024 * 1024, // 50MB
   default: 5 * 1024 * 1024, // 5MB
@@ -14,6 +16,8 @@ export const MAX_FILE_SIZES = {
 // Allowed MIME types
 export const ALLOWED_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  audio: ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/x-wav'],
+  archive: ['application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed'],
   document: [
     'application/pdf',
     'application/msword',
@@ -34,12 +38,23 @@ export const uploadGroups = {
     maxSize: MAX_FILE_SIZES.default,
   },
 
-  // Add your groups here...
-  // Example:
-  // products: {
-  //   types: ALLOWED_TYPES.image,
-  //   maxSize: 10 * 1024 * 1024,
-  // },
+  // Beat artwork
+  cover: {
+    types: ALLOWED_TYPES.image,
+    maxSize: MAX_FILE_SIZES.image,
+  },
+
+  // Beat audio (previews/masters)
+  beat: {
+    types: ALLOWED_TYPES.audio,
+    maxSize: MAX_FILE_SIZES.audio,
+  },
+
+  // Stems/Project files
+  archive: {
+    types: ALLOWED_TYPES.archive,
+    maxSize: MAX_FILE_SIZES.archive,
+  },
 };
 
 /**
@@ -55,6 +70,12 @@ export const getGroupConfig = (group) => {
 export const detectFileType = (mimetype) => {
   if (ALLOWED_TYPES.image?.includes(mimetype)) {
     return 'image';
+  }
+  if (ALLOWED_TYPES.audio?.includes(mimetype)) {
+    return 'audio';
+  }
+  if (ALLOWED_TYPES.archive?.includes(mimetype)) {
+    return 'archive';
   }
   if (ALLOWED_TYPES.document?.includes(mimetype)) {
     return 'document';

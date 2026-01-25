@@ -80,7 +80,7 @@ export class BaseModel {
     }
 
     // Get total count
-    const countQuery = query.clone();
+    const countQuery = query.clone().clearSelect().clearOrder();
     const [{ count }] = await countQuery.count(`${this.primaryKey} as count`);
     const total = parseInt(count);
 

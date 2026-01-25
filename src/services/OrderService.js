@@ -141,6 +141,8 @@ export const OrderService = {
         'beats.musicalKey',
         'beats.duration',
         'beats.producerId',
+        'beats.playsCount',
+        'beats.likesCount',
         'producers.displayName as producerName',
         'producers.username as producerUsername',
         'orderItems.price',
