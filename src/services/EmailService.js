@@ -269,19 +269,29 @@ class EmailService {
    */
   async sendPurchaseConfirmation(to, name, order) {
     const itemsHtml = order.items
-      .map(
-        (item) => `
+      .map((item) => {
+        const includedFiles = Array.isArray(item.includedFiles)
+          ? item.includedFiles
+          : JSON.parse(item.includedFiles || '[]');
+
+        const filesHtml =
+          includedFiles.length > 0
+            ? `<p style="margin:4px 0 0;color:#ea580c;font-size:11px;font-weight:500;">Includes: ${includedFiles.join(', ')}</p>`
+            : '';
+
+        return `
       <tr>
         <td style="padding:12px 0;border-bottom:1px solid #262626;">
           <p style="margin:0;color:#fafafa;font-weight:600;">${item.beatTitle}</p>
           <p style="margin:4px 0 0;color:#737373;font-size:13px;">${item.licenseName} License</p>
+          ${filesHtml}
         </td>
         <td style="padding:12px 0;border-bottom:1px solid #262626;text-align:right;color:#fafafa;">
           $${item.price.toFixed(2)}
         </td>
       </tr>
-    `
-      )
+    `;
+      })
       .join('');
 
     const content = `

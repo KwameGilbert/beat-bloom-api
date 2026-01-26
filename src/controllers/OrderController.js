@@ -52,6 +52,16 @@ export const OrderController = {
     const tiers = await OrderService.getUserPurchasedTiersForBeat(userId, beatId);
     return successResponse(res, tiers, 'Purchased tiers retrieved successfully');
   }),
+
+  /**
+   * Get download links for a purchase
+   */
+  getDownloadLinks: asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const files = await OrderService.getPurchaseFiles(userId, id);
+    return successResponse(res, files, 'Download links retrieved successfully');
+  }),
 };
 
 export default OrderController;

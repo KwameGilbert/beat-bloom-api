@@ -259,12 +259,21 @@ export const OrderService = {
       // 3. Clear user's cart
       await trx('cartItems').where('userId', order.userId).del();
 
+      const enrichedItems = [];
+      for (const item of items) {
+        const tier = await trx('licenseTiers').where('id', item.licenseTierId).first();
+        enrichedItems.push({
+          ...item,
+          includedFiles: tier?.includedFiles || '[]',
+        });
+      }
+
       // 4. Send fulfillment email
       const buyer = await trx('users').where('id', order.userId).first();
       try {
         await emailService.sendPurchaseConfirmation(order.email, buyer?.name || 'Customer', {
           ...updatedOrder,
-          items,
+          items: enrichedItems,
         });
       } catch (emailError) {
         console.error('Failed to send fulfillment email:', emailError);
@@ -302,6 +311,43 @@ export const OrderService = {
       console.error('Paystack verification error:', error);
       throw error;
     }
+  },
+
+  /**
+   * Get download links for a purchase
+   */
+  async getPurchaseFiles(userId, purchaseId) {
+    const purchase = await db('userPurchases').where({ id: purchaseId, userId }).first();
+
+    if (!purchase) {
+      throw new NotFoundError('Purchase not found');
+    }
+
+    const { beatId, licenseType } = purchase;
+
+    // Define which files are included per license type
+    const fileTypeMap = {
+      mp3: ['masterMp3'],
+      wav: ['masterMp3', 'masterWav'],
+      stems: ['masterMp3', 'masterWav', 'stems'],
+      exclusive: ['masterMp3', 'masterWav', 'stems', 'projectFiles'],
+    };
+
+    const allowedFileTypes = fileTypeMap[licenseType] || ['masterMp3'];
+
+    const files = await db('beatFiles')
+      .where('beatId', beatId)
+      .whereIn('fileType', allowedFileTypes);
+
+    return files.map((file) => ({
+      id: file.id,
+      name: file.fileName,
+      type: file.fileType,
+      url: file.filePath.startsWith('http')
+        ? file.filePath
+        : `${env.UPLOAD_STRATEGY === 'local' ? env.APP_URL || '' : ''}${file.filePath}`,
+      size: file.fileSize,
+    }));
   },
 };
 
