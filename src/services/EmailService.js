@@ -105,10 +105,13 @@ class EmailService {
         text,
       });
 
-      logger.info({ to, subject }, 'Email sent');
+      logger.info({ to, subject, messageId: result.messageId }, 'Email sent');
       return { success: true, messageId: result.messageId };
     } catch (error) {
-      logger.error({ to, error: error.message }, 'Email failed');
+      logger.error(
+        { to, subject, error: error.message, stack: error.stack },
+        'Email failed to send'
+      );
       throw error;
     }
   }
@@ -287,7 +290,7 @@ class EmailService {
           ${filesHtml}
         </td>
         <td style="padding:12px 0;border-bottom:1px solid #262626;text-align:right;color:#fafafa;">
-          $${item.price.toFixed(2)}
+          $${Number(item.price || 0).toFixed(2)}
         </td>
       </tr>
     `;
@@ -307,7 +310,7 @@ class EmailService {
           <tr>
             <td style="padding:16px 0 0;color:#fafafa;font-weight:600;">Total</td>
             <td style="padding:16px 0 0;text-align:right;color:#ea580c;font-weight:700;font-size:18px;">
-              $${order.total.toFixed(2)}
+              $${Number(order.total || 0).toFixed(2)}
             </td>
           </tr>
         </table>
@@ -321,7 +324,7 @@ class EmailService {
       to,
       subject: `Order Confirmed #${order.orderNumber} - BeatBloom`,
       html: this.getEmailTemplate(content),
-      text: `Order confirmed! Order #${order.orderNumber}. Total: $${order.total.toFixed(2)}`,
+      text: `Order confirmed! Order #${order.orderNumber}. Total: $${Number(order.total || 0).toFixed(2)}`,
     });
   }
 

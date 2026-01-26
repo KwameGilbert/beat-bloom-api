@@ -271,7 +271,7 @@ export const OrderService = {
       // 4. Send fulfillment email
       const buyer = await trx('users').where('id', order.userId).first();
       try {
-        await emailService.sendPurchaseConfirmation(order.email, buyer?.name || 'Customer', {
+        await emailService.sendPurchaseConfirmation(updatedOrder.email, buyer?.name || 'Customer', {
           ...updatedOrder,
           items: enrichedItems,
         });
