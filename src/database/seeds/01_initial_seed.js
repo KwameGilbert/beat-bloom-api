@@ -34,6 +34,9 @@ export const seed = async function (knex) {
   await knex('beats').del();
   await knex('producers').del();
   await knex('genres').del();
+  await knex('admins').del();
+  await knex('artists').del();
+  await knex('platformSettings').del();
   await knex('users').del();
 
   console.log('🗑️  Cleared existing data');
@@ -229,12 +232,48 @@ export const seed = async function (knex) {
         coverImage: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1200&q=80',
         location: 'Los Angeles, CA',
         website: 'https://beatdrop.com/alexproducer',
+        twitter: 'alexprod',
+        instagram: 'alex.producer',
         isVerified: false,
       },
     ])
     .returning('*');
 
   console.log(`✅ Created ${producers.length} producers`);
+
+  // ==========================================
+  // 3. ARTISTS
+  // ==========================================
+  const artists = await knex('artists')
+    .insert([
+      {
+        userId: userMap['artist@beatbloom.com'].id,
+        displayName: 'Test Artist',
+        bio: 'Up-and-coming artist looking for the perfect sound.',
+        avatar: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=80',
+        location: 'Miami, FL',
+        instagram: 'testartist_official',
+      },
+    ])
+    .returning('*');
+
+  console.log(`✅ Created ${artists.length} artists`);
+
+  // ==========================================
+  // 4. ADMINS
+  // ==========================================
+  const admins = await knex('admins')
+    .insert([
+      {
+        userId: userMap['admin@beatbloom.com'].id,
+        displayName: 'Admin User',
+        bio: 'System administrator for BeatBloom.',
+        avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
+      },
+    ])
+    .returning('*');
+
+  console.log(`✅ Created ${admins.length} admins`);
 
   // Map producers by username
   const producerMap = {};
@@ -279,6 +318,55 @@ export const seed = async function (knex) {
     .returning('*');
 
   console.log(`✅ Created ${genres.length} genres`);
+
+  // ==========================================
+  // 6. PLATFORM SETTINGS
+  // ==========================================
+  await knex('platformSettings').insert([
+    {
+      key: 'platformCommissionRate',
+      value: '15',
+      type: 'number',
+      category: 'fees',
+      description: 'Platform commission percentage',
+    },
+    {
+      key: 'processingFeePercentage',
+      value: '2.9',
+      type: 'number',
+      category: 'fees',
+      description: 'Payment processing fee percentage',
+    },
+    {
+      key: 'processingFeeFixed',
+      value: '0.30',
+      type: 'number',
+      category: 'fees',
+      description: 'Fixed processing fee per transaction in USD',
+    },
+    {
+      key: 'minimumPayoutAmount',
+      value: '50',
+      type: 'number',
+      category: 'payout',
+      description: 'Minimum balance required for payout in USD',
+    },
+    {
+      key: 'payoutFrequency',
+      value: 'weekly',
+      type: 'string',
+      category: 'payout',
+      description: 'Payout frequency',
+    },
+    {
+      key: 'maintenanceMode',
+      value: 'false',
+      type: 'boolean',
+      category: 'general',
+      description: 'Enable maintenance mode',
+    },
+  ]);
+  console.log('✅ Created platform settings');
 
   // Map genres by name
   const genreMap = {};
@@ -684,6 +772,63 @@ export const seed = async function (knex) {
   console.log(`✅ Created ${beats.length} beats`);
 
   // ==========================================
+  // 6. BEAT FILES
+  // ==========================================
+  const beatFiles = [];
+  beats.forEach((beat) => {
+    beatFiles.push(
+      {
+        beatId: beat.id,
+        fileType: 'preview',
+        fileName: `${beat.slug}-preview.mp3`,
+        filePath: `beats/${beat.producerId}/${beat.id}/preview.mp3`,
+        mimeType: 'audio/mpeg',
+        fileSize: 3500000,
+        isPublic: true,
+      },
+      {
+        beatId: beat.id,
+        fileType: 'masterMp3',
+        fileName: `${beat.slug}-master.mp3`,
+        filePath: `beats/${beat.producerId}/${beat.id}/master.mp3`,
+        mimeType: 'audio/mpeg',
+        fileSize: 8500000,
+        isPublic: false,
+      },
+      {
+        beatId: beat.id,
+        fileType: 'masterWav',
+        fileName: `${beat.slug}-master.wav`,
+        filePath: `beats/${beat.producerId}/${beat.id}/master.wav`,
+        mimeType: 'audio/wav',
+        fileSize: 45000000,
+        isPublic: false,
+      },
+      {
+        beatId: beat.id,
+        fileType: 'stems',
+        fileName: `${beat.slug}-stems.zip`,
+        filePath: `beats/${beat.producerId}/${beat.id}/stems.zip`,
+        mimeType: 'application/zip',
+        fileSize: 150000000,
+        isPublic: false,
+      },
+      {
+        beatId: beat.id,
+        fileType: 'projectFiles',
+        fileName: `${beat.slug}-project.zip`,
+        filePath: `beats/${beat.producerId}/${beat.id}/project.zip`,
+        mimeType: 'application/zip',
+        fileSize: 250000000,
+        isPublic: false,
+      }
+    );
+  });
+
+  await knex('beatFiles').insert(beatFiles);
+  console.log(`✅ Created ${beatFiles.length} beat files`);
+
+  // ==========================================
   // 5. LICENSE TIERS
   // ==========================================
   const licenseTierData = [];
@@ -864,6 +1009,34 @@ export const seed = async function (knex) {
     .returning('*');
 
   console.log(`✅ Created ${payoutMethods.length} payout methods`);
+
+  // ==========================================
+  // 10. PAYOUTS
+  // ==========================================
+  await knex('payouts')
+    .insert([
+      {
+        producerId: producerMap['cloudnine'].id,
+        payoutMethodId: payoutMethods[0].id,
+        payoutNumber: 'BB-PO-2026-0001',
+        amount: 150.0,
+        currency: 'USD',
+        status: 'completed',
+        transactionReference: 'PAY-CLOUDNINE-001',
+        completedAt: new Date('2026-01-01'),
+      },
+      {
+        producerId: producerMap['synthwave'].id,
+        payoutMethodId: payoutMethods[1].id,
+        payoutNumber: 'BB-PO-2026-0002',
+        amount: 200.0,
+        currency: 'USD',
+        status: 'pending',
+        transactionReference: 'PAY-SYNTHWAVE-001',
+      },
+    ])
+    .returning('*');
+  console.log('✅ Created sample payout records');
 
   // ==========================================
   // 10. SAMPLE ORDERS
@@ -1063,5 +1236,23 @@ export const seed = async function (knex) {
   ]);
 
   console.log('✅ Created notifications');
+
+  // ==========================================
+  // 13. CART ITEMS
+  // ==========================================
+  await knex('cartItems').insert([
+    {
+      userId: artistUser.id,
+      beatId: beats[1].id,
+      licenseTierId: tierMap[beats[1].id]['mp3'].id,
+    },
+    {
+      userId: artistUser.id,
+      beatId: beats[6].id,
+      licenseTierId: tierMap[beats[6].id]['wav'].id,
+    },
+  ]);
+  console.log('✅ Created sample cart items');
+
   console.log('\n🎉 Seeding completed successfully!\n');
 };
