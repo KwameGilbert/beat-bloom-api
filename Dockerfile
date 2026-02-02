@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
 COPY . .
 
 # Production stage
-FROM node:22-alpine AS production
+FROM node:25-alpine AS production
 
 WORKDIR /app
 
