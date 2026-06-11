@@ -27,7 +27,7 @@ export const HubtelService = {
       payeeMobileNumber,
       payeeEmail,
       returnUrl,
-      cancellationUrl
+      cancellationUrl,
     } = params;
 
     if (!env.HUBTEL_CLIENT_ID || !env.HUBTEL_CLIENT_SECRET || !env.HUBTEL_MERCHANT_ACCOUNT_NUMBER) {
@@ -37,19 +37,24 @@ export const HubtelService = {
     // Convert USD to GHS since Hubtel processes in GHS (cuz payment provider uses ghs)
     const USD_TO_GHS_RATE = 15.5;
     const amountInGHS = totalAmount * USD_TO_GHS_RATE;
-    console.log(`[HubtelService] Converting USD totalAmount ${totalAmount} to GHS at rate ${USD_TO_GHS_RATE}: ${amountInGHS}`);
+    console.log(
+      `[HubtelService] Converting USD totalAmount ${totalAmount} to GHS at rate ${USD_TO_GHS_RATE}: ${amountInGHS}`
+    );
 
     const payload = {
       totalAmount: parseFloat(amountInGHS.toFixed(2)),
       description,
       callbackUrl: env.HUBTEL_CALLBACK_URL,
       returnUrl: `${returnUrl || env.HUBTEL_RETURN_URL || `${env.FRONTEND_URL}/checkout`}?reference=${clientReference}`,
-      cancellationUrl: cancellationUrl || env.HUBTEL_CANCELLATION_URL || `${env.FRONTEND_URL}/checkout?status=cancelled`,
+      cancellationUrl:
+        cancellationUrl ||
+        env.HUBTEL_CANCELLATION_URL ||
+        `${env.FRONTEND_URL}/checkout?status=cancelled`,
       merchantAccountNumber: env.HUBTEL_MERCHANT_ACCOUNT_NUMBER,
       clientReference,
       payeeName: payeeName || undefined,
       payeeMobileNumber: payeeMobileNumber || undefined,
-      payeeEmail: payeeEmail || undefined
+      payeeEmail: payeeEmail || undefined,
     };
 
     try {
@@ -57,10 +62,10 @@ export const HubtelService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.getAuthHeader(),
-          'Accept': 'application/json'
+          Authorization: this.getAuthHeader(),
+          Accept: 'application/json',
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -82,7 +87,9 @@ export const HubtelService = {
   async checkTransactionStatus(clientReference) {
     if (!env.HUBTEL_CLIENT_ID || !env.HUBTEL_CLIENT_SECRET || !env.HUBTEL_MERCHANT_ACCOUNT_NUMBER) {
       if (env.NODE_ENV !== 'production') {
-        console.warn('⚠️ Hubtel credentials not configured. Returning mock status: Paid for development.');
+        console.warn(
+          '⚠️ Hubtel credentials not configured. Returning mock status: Paid for development.'
+        );
         return {
           message: 'Successful',
           responseCode: '0000',
@@ -97,8 +104,8 @@ export const HubtelService = {
             amount: 0.1,
             charges: 0.02,
             amountAfterCharges: 0.08,
-            isFulfilled: true
-          }
+            isFulfilled: true,
+          },
         };
       }
       throw new Error('Hubtel API credentials are not configured in environment variables.');
@@ -111,9 +118,9 @@ export const HubtelService = {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': this.getAuthHeader(),
-          'Accept': 'application/json'
-        }
+          Authorization: this.getAuthHeader(),
+          Accept: 'application/json',
+        },
       });
 
       // Read raw text first to handle non-JSON responses (HTML error pages, etc.)
@@ -124,14 +131,17 @@ export const HubtelService = {
         result = JSON.parse(rawText);
       } catch {
         // Hubtel returned non-JSON (HTML error page, etc.)
-        console.warn(`Hubtel status API returned non-JSON (HTTP ${response.status}):`, rawText.substring(0, 200));
+        console.warn(
+          `Hubtel status API returned non-JSON (HTTP ${response.status}):`,
+          rawText.substring(0, 200)
+        );
         return {
           message: 'Transaction not found or not yet processed',
           responseCode: 'PENDING',
           data: {
             status: 'Unpaid',
-            clientReference
-          }
+            clientReference,
+          },
         };
       }
 
@@ -142,8 +152,8 @@ export const HubtelService = {
           responseCode: result.responseCode || 'ERROR',
           data: {
             status: 'Unpaid',
-            clientReference
-          }
+            clientReference,
+          },
         };
       }
 
@@ -156,11 +166,11 @@ export const HubtelService = {
         responseCode: 'ERROR',
         data: {
           status: 'Unpaid',
-          clientReference
-        }
+          clientReference,
+        },
       };
     }
-  }
+  },
 };
 
 export default HubtelService;
