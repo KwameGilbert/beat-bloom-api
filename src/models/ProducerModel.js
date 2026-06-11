@@ -34,7 +34,11 @@ class ProducerModel extends BaseModel {
       const { UserModel } = await import('./UserModel.js');
       const user = await UserModel.findById(userId);
       if (user && user.role === 'producer') {
-        const baseUsername = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '') + Math.floor(1000 + Math.random() * 9000);
+        const baseUsername =
+          user.email
+            .split('@')[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '') + Math.floor(1000 + Math.random() * 9000);
         producer = await this.create({
           userId,
           username: baseUsername,
