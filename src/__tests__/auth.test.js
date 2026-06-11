@@ -23,7 +23,7 @@ import {
   getAuthHeader,
 } from './setup.js';
 
-const API_BASE = '/api/v1/auth';
+const API_BASE = '/auth';
 
 describe('Auth API', () => {
   beforeAll(async () => {
