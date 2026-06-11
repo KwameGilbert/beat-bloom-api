@@ -14,7 +14,12 @@ router.get('/', ProducerController.list);
  * @route GET /api/producers/dashboard/overview
  * @desc Get producer dashboard overview data (authenticated)
  */
-router.get('/dashboard/overview', authenticate, requireProducer, ProducerController.getDashboardOverview);
+router.get(
+  '/dashboard/overview',
+  authenticate,
+  requireProducer,
+  ProducerController.getDashboardOverview
+);
 
 /**
  * @route GET /api/producers/dashboard/sales
@@ -29,4 +34,3 @@ router.get('/dashboard/sales', authenticate, requireProducer, ProducerController
 router.get('/:username', ProducerController.get);
 
 export default router;
-
