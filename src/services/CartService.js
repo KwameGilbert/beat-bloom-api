@@ -53,14 +53,15 @@ export const CartService = {
     const feeSettings = await PlatformSettingsService.getFeeSettings();
     const platformFee =
       Math.round(((subtotal * feeSettings.platformCommissionRate) / 100) * 100) / 100;
-    
+
     // Processing fee is calculated on (subtotal + platformFee)
     const processingFee =
       Math.round(
-        (((subtotal + platformFee) * feeSettings.processingFeePercentage) / 100 + feeSettings.processingFeeFixed) *
+        (((subtotal + platformFee) * feeSettings.processingFeePercentage) / 100 +
+          feeSettings.processingFeeFixed) *
           100
       ) / 100;
-      
+
     // Total cost to the buyer includes raw cost, platform fee, and processing fee
     const total = Math.round((subtotal + platformFee + processingFee) * 100) / 100;
 
