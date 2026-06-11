@@ -38,14 +38,14 @@ export const PaymentController = {
       }
     } else if (provider === 'hubtel') {
       const event = req.body;
-      
+
       // Hubtel callback uses ResponseCode check
       if (event && event.ResponseCode === '0000' && event.Status === 'Success' && event.Data) {
         const reference = event.Data.ClientReference;
-        
+
         if (event.Data.Status === 'Success') {
           console.log(`[PaymentController] Hubtel webhook success received for: ${reference}`);
-          
+
           // Securely check transaction status against Hubtel API to verify authenticity
           await OrderService.verifyPayment(reference);
         }
