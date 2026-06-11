@@ -17,7 +17,12 @@ export const MAX_FILE_SIZES = {
 export const ALLOWED_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   audio: ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/x-wav', 'audio/mpeg4-generic'],
-  archive: ['application/zip', 'application/x-zip-compressed', 'application/x-zip-compressed,', 'application/x-rar-compressed'],
+  archive: [
+    'application/zip',
+    'application/x-zip-compressed',
+    'application/x-zip-compressed,',
+    'application/x-rar-compressed',
+  ],
   document: [
     'application/pdf',
     'application/msword',
@@ -46,7 +51,7 @@ export const uploadGroups = {
 
   // Beat audio (previews/masters)
   beat: {
-    types: ALLOWED_TYPES.audio, 
+    types: ALLOWED_TYPES.audio,
     maxSize: MAX_FILE_SIZES.audio,
   },
 
