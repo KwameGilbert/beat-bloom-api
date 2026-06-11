@@ -20,7 +20,7 @@ export const PaymentService = {
   async initiatePayment(params) {
     const provider = this.getProvider();
     console.log(`[PaymentService] Initiating payment for provider: ${provider}`);
-    
+
     if (provider === 'hubtel') {
       return HubtelService.initiatePayment(params);
     } else {
@@ -33,14 +33,16 @@ export const PaymentService = {
    */
   async verifyPayment(reference) {
     const provider = this.getProvider();
-    console.log(`[PaymentService] Verifying payment reference: ${reference} with provider: ${provider}`);
+    console.log(
+      `[PaymentService] Verifying payment reference: ${reference} with provider: ${provider}`
+    );
 
     if (provider === 'hubtel') {
       return HubtelService.checkTransactionStatus(reference);
     } else {
       return PaystackService.verifyPayment(reference);
     }
-  }
+  },
 };
 
 export default PaymentService;
