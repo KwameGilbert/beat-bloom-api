@@ -17,8 +17,8 @@ export const PaystackService = {
       responseCode: '0000',
       data: {
         checkoutUrl: null, // Instructs frontend to open inline Paystack modal
-        clientReference
-      }
+        clientReference,
+      },
     };
   },
 
@@ -50,7 +50,7 @@ export const PaystackService = {
       console.error('Paystack verification API error:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default PaystackService;
