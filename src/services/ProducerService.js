@@ -159,7 +159,8 @@ export const ProducerService = {
             plays: b.plays || 0,
             sales: 0,
             revenue: 0,
-            cover: b.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=120&q=80',
+            cover:
+              b.cover || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=120&q=80',
             trend: '+0%',
           });
         }
@@ -345,7 +346,9 @@ export const ProducerService = {
     }
 
     // 2. Fetch minimum payout settings
-    const minPayoutSetting = await db('platformSettings').where('key', 'minimumPayoutAmount').first();
+    const minPayoutSetting = await db('platformSettings')
+      .where('key', 'minimumPayoutAmount')
+      .first();
     const minPayout = parseFloat(minPayoutSetting?.value || 50);
 
     if (withdrawAmount < minPayout) {
@@ -397,12 +400,10 @@ export const ProducerService = {
       }
 
       if (earningsIdsToUpdate.length > 0) {
-        await trx('producerEarnings')
-          .whereIn('id', earningsIdsToUpdate)
-          .update({
-            status: 'processing',
-            payoutId: payout.id,
-          });
+        await trx('producerEarnings').whereIn('id', earningsIdsToUpdate).update({
+          status: 'processing',
+          payoutId: payout.id,
+        });
       }
 
       return payout;
@@ -452,4 +453,3 @@ export const ProducerService = {
 };
 
 export default ProducerService;
-
