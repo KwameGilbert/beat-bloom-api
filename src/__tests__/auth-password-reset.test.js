@@ -13,7 +13,7 @@ import { app } from '../app.js';
 import { db } from '../config/database.js';
 import { clearDatabase, createTestUser, setupTests, teardownTests } from './setup.js';
 
-const API_BASE = '/api/v1/auth';
+const API_BASE = '/auth';
 
 describe('Password Reset & Email Verification', () => {
   beforeAll(async () => {
