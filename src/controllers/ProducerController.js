@@ -144,4 +144,3 @@ export const ProducerController = {
 };
 
 export default ProducerController;
-
