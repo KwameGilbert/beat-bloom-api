@@ -111,7 +111,7 @@ export const OrderService = {
         payeeName: buyer?.name || 'Customer',
         payeeEmail: order.email,
         returnUrl,
-        cancellationUrl
+        cancellationUrl,
       });
 
       if (initiateResponse && initiateResponse.status === 'Success' && initiateResponse.data) {
@@ -275,14 +275,17 @@ export const OrderService = {
         const tier = await trx('licenseTiers').where('id', item.licenseTierId).first();
 
         // Create User Purchase Record (skip if already exists from a previous verification)
-        await trx('userPurchases').insert({
-          userId: order.userId,
-          beatId: item.beatId,
-          orderItemId: item.id,
-          licenseTierId: item.licenseTierId,
-          licenseType: tier?.tierType || 'mp3',
-          purchasedAt: new Date(),
-        }).onConflict(['userId', 'beatId', 'licenseTierId']).ignore();
+        await trx('userPurchases')
+          .insert({
+            userId: order.userId,
+            beatId: item.beatId,
+            orderItemId: item.id,
+            licenseTierId: item.licenseTierId,
+            licenseType: tier?.tierType || 'mp3',
+            purchasedAt: new Date(),
+          })
+          .onConflict(['userId', 'beatId', 'licenseTierId'])
+          .ignore();
 
         // Record Producer Earnings (skip if already recorded for this order item)
         const existingEarning = await trx('producerEarnings')
