@@ -25,7 +25,7 @@ import {
   getAuthHeader,
 } from './setup.js';
 
-const API_BASE = '/api/v1/users';
+const API_BASE = '/users';
 
 describe('User Management API (Admin)', () => {
   beforeAll(async () => {
