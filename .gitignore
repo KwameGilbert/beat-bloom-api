@@ -52,3 +52,4 @@ temp/
 uploads/
 .env
 .env copy
+commit_each.py
