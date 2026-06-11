@@ -181,11 +181,7 @@ export const BeatService = {
       .leftJoin('genres', 'beats.genreId', 'genres.id')
       .where('beats.producerId', producerId)
       .whereNull('beats.deletedAt')
-      .select(
-        'beats.*',
-        'genres.name as genreName',
-        'genres.slug as genreSlug'
-      )
+      .select('beats.*', 'genres.name as genreName', 'genres.slug as genreSlug')
       .orderBy('beats.createdAt', 'desc');
 
     const beatIds = beats.map((b) => b.id);
@@ -213,7 +209,7 @@ export const BeatService = {
         .sum('netAmount as net')
         .groupBy('beatId');
 
-      earnings.forEach(e => {
+      earnings.forEach((e) => {
         revenueByBeat[e.beatId] = parseFloat(e.net || 0);
       });
     }
@@ -227,15 +223,15 @@ export const BeatService = {
         .sum('downloadCount as count')
         .groupBy('beatId');
 
-      downloads.forEach(d => {
+      downloads.forEach((d) => {
         downloadsByBeat[d.beatId] = parseInt(d.count || 0);
       });
     }
 
-    return beats.map(b => {
+    return beats.map((b) => {
       const tiers = tiersByBeat[b.id] || [];
       const basePrice = tiers.length > 0 ? parseFloat(tiers[0].price) : 0;
-      const exclusiveTier = tiers.find(t => t.isExclusive);
+      const exclusiveTier = tiers.find((t) => t.isExclusive);
       const exclusivePrice = exclusiveTier ? parseFloat(exclusiveTier.price) : 0;
 
       return {
@@ -253,7 +249,7 @@ export const BeatService = {
         basePrice,
         exclusivePrice,
         isExclusiveSold: !!b.isExclusiveSold,
-        createdAt: b.createdAt
+        createdAt: b.createdAt,
       };
     });
   },
@@ -262,9 +258,7 @@ export const BeatService = {
    * Update beat details and its license tiers
    */
   async updateBeat(beatId, producerId, data) {
-    const beat = await db('beats')
-      .where({ id: beatId, producerId })
-      .first();
+    const beat = await db('beats').where({ id: beatId, producerId }).first();
 
     if (!beat) {
       throw new NotFoundError('Beat not found or does not belong to this producer');
@@ -314,9 +308,7 @@ export const BeatService = {
 
       updateData.updatedAt = new Date();
 
-      await trx('beats')
-        .where({ id: beatId })
-        .update(updateData);
+      await trx('beats').where({ id: beatId }).update(updateData);
 
       // Update license tiers if provided
       if (data.licenseTiers) {
@@ -364,17 +356,13 @@ export const BeatService = {
    * Delete beat (soft-delete)
    */
   async deleteBeat(beatId, producerId) {
-    const beat = await db('beats')
-      .where({ id: beatId, producerId })
-      .first();
+    const beat = await db('beats').where({ id: beatId, producerId }).first();
 
     if (!beat) {
       throw new NotFoundError('Beat not found or does not belong to this producer');
     }
 
-    const deleted = await db('beats')
-      .where({ id: beatId })
-      .update({ deletedAt: new Date() });
+    const deleted = await db('beats').where({ id: beatId }).update({ deletedAt: new Date() });
 
     return deleted > 0;
   },
