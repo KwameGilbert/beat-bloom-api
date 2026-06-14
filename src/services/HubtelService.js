@@ -28,7 +28,8 @@ export const HubtelService = {
       payeeEmail
     } = params;
 
-    // Fallback/Mock check for local development without keys
+
+
     if (!env.HUBTEL_CLIENT_ID || !env.HUBTEL_CLIENT_SECRET || !env.HUBTEL_MERCHANT_ACCOUNT_NUMBER) {
       throw new Error('Payment API credentials are not configured in environment variables.');
     }
