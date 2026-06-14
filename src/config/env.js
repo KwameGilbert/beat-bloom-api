@@ -86,6 +86,14 @@ const envSchema = z.object({
   // Payment Config
   PAYMENT_PROVIDER: z.enum(['paystack', 'hubtel']).default('hubtel'),
 
+  // Hubtel Integration
+  HUBTEL_CLIENT_ID: z.string().optional(),
+  HUBTEL_CLIENT_SECRET: z.string().optional(),
+  HUBTEL_MERCHANT_ACCOUNT_NUMBER: z.string().optional(),
+  HUBTEL_CALLBACK_URL: z.string().optional(),
+  HUBTEL_RETURN_URL: z.string().optional(),
+  HUBTEL_CANCELLATION_URL: z.string().optional(),
+
   // OAuth - Google
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
