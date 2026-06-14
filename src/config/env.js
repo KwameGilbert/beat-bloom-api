@@ -84,7 +84,7 @@ const envSchema = z.object({
   PAYSTACK_SECRET_KEY: z.string().optional(),
 
   // Payment Config
-  PAYMENT_PROVIDER: z.enum(['paystack', 'hubtel']).default('paystack'),
+  PAYMENT_PROVIDER: z.enum(['paystack', 'hubtel']).default('hubtel'),
 
   // OAuth - Google
   GOOGLE_CLIENT_ID: z.string().optional(),
