@@ -24,7 +24,7 @@ export const OrderService = {
     const platformCommissionRate = feeSettings.platformCommissionRate;
 
     // Use transaction for consistency
-    return db.transaction(async (trx) => {
+    const order = await db.transaction(async (trx) => {
       // 1. Create Order Header
       const orderNumber = `BB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -75,7 +75,7 @@ export const OrderService = {
         ) / 100;
       const total = Math.round((subtotal + processingFee) * 100) / 100;
 
-      const [order] = await trx('orders')
+      const [createdOrder] = await trx('orders')
         .insert({
           userId,
           orderNumber,
@@ -93,18 +93,18 @@ export const OrderService = {
       for (const item of preparedItems) {
         await trx('orderItems').insert({
           ...item,
-          orderId: order.id,
+          orderId: createdOrder.id,
         });
       }
 
-      return order;
+      return createdOrder;
     });
 
-    // Initiate payment using the configured gateway (Paystack or Hubtel)
+    // 3. Initiate payment using the configured gateway (Paystack or Hubtel)
     try {
       const buyer = await db('users').where('id', userId).first();
       const initiateResponse = await PaymentService.initiatePayment({
-        totalAmount: order.total,
+        totalAmount: parseFloat(order.total),
         description: `Beat Purchase - Order ${order.orderNumber}`,
         clientReference: order.orderNumber,
         payeeName: buyer?.name || 'Customer',
