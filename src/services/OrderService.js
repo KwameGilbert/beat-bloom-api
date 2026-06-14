@@ -3,6 +3,7 @@ import { NotFoundError, BadRequestError } from '../utils/errors.js';
 import { PlatformSettingsService } from './PlatformSettingsService.js';
 import { env } from '../config/env.js';
 import emailService from './EmailService.js';
+import { PaymentService } from './PaymentService.js';
 
 /**
  * Order Service
@@ -80,8 +81,8 @@ export const OrderService = {
           orderNumber,
           email: email || (await trx('users').where('id', userId).first()).email,
           status: 'pending',
-          paymentProvider: paymentMethod,
-          paymentReference: data.paymentReference || `REF-${Date.now()}`,
+          paymentProvider: env.PAYMENT_PROVIDER,
+          paymentReference: orderNumber,
           subtotal,
           processingFee,
           total,
@@ -98,6 +99,51 @@ export const OrderService = {
 
       return order;
     });
+
+    // Initiate payment using the configured gateway (Paystack or Hubtel)
+    try {
+      const buyer = await db('users').where('id', userId).first();
+      const initiateResponse = await PaymentService.initiatePayment({
+        totalAmount: order.total,
+        description: `Beat Purchase - Order ${order.orderNumber}`,
+        clientReference: order.orderNumber,
+        payeeName: buyer?.name || 'Customer',
+        payeeEmail: order.email,
+      });
+
+      if (initiateResponse && initiateResponse.status === 'Success' && initiateResponse.data) {
+        // Update order in database with provider metadata and reference
+        const [updatedOrder] = await db('orders')
+          .where('id', order.id)
+          .update({
+            paymentReference: order.orderNumber,
+            paymentMetadata: JSON.stringify({
+              checkoutId: initiateResponse.data.checkoutId,
+              checkoutUrl: initiateResponse.data.checkoutUrl,
+              checkoutDirectUrl: initiateResponse.data.checkoutDirectUrl,
+            }),
+            updatedAt: new Date(),
+          })
+          .returning('*');
+
+        return {
+          ...updatedOrder,
+          checkoutUrl: initiateResponse.data.checkoutUrl,
+          checkoutDirectUrl: initiateResponse.data.checkoutDirectUrl,
+          checkoutId: initiateResponse.data.checkoutId,
+        };
+      } else {
+        throw new BadRequestError('Payment gateway initiation failed');
+      }
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      // Mark order as failed since payment initiation failed
+      await db('orders').where('id', order.id).update({
+        status: 'failed',
+        updatedAt: new Date(),
+      });
+      throw new BadRequestError(`Payment initiation failed: ${error.message}`);
+    }
   },
 
   /**
@@ -285,32 +331,56 @@ export const OrderService = {
   },
 
   /**
-   * Verify a Paystack payment
+   * Verify payment status using the configured payment provider
    */
-  async verifyPaystackPayment(reference) {
-    const secret = env.PAYSTACK_SECRET_KEY;
-
+  async verifyPayment(reference) {
     try {
-      const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-        headers: {
-          Authorization: `Bearer ${secret}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const result = await PaymentService.verifyPayment(reference);
 
-      const data = await response.json();
+      // Verify status dynamically based on configured provider
+      const provider = (env.PAYMENT_PROVIDER || 'paystack').toLowerCase();
+      let verified = false;
+      let paymentData = {};
+      let status = 'Unpaid';
+      let message = 'Verification failed';
 
-      if (data.status && data.data.status === 'success') {
-        // Mark as paid in our DB
-        await this.markOrderAsPaid(reference, data.data);
-        return { verified: true, data: data.data };
+      if (provider === 'hubtel') {
+        if (result.responseCode === '0000' && result.data && result.data.status === 'Paid') {
+          verified = true;
+          paymentData = result.data;
+          status = 'Paid';
+        } else {
+          status = result.data?.status || 'Unpaid';
+          message = result.message || 'Verification failed';
+        }
+      } else {
+        // Paystack
+        if (result.verified) {
+          verified = true;
+          paymentData = result.data;
+          status = 'Paid';
+        } else {
+          message = result.message || 'Verification failed';
+        }
       }
 
-      return { verified: false, message: data.message || 'Verification failed' };
+      if (verified) {
+        await this.markOrderAsPaid(reference, paymentData);
+        return { verified: true, data: paymentData };
+      }
+
+      return { verified: false, status, message };
     } catch (error) {
-      console.error('Paystack verification error:', error);
+      console.error(`Verification error for reference ${reference}:`, error);
       throw error;
     }
+  },
+
+  /**
+   * Verify a Paystack payment (Legacy wrapper)
+   */
+  async verifyPaystackPayment(reference) {
+    return this.verifyPayment(reference);
   },
 
   /**
