@@ -11,7 +11,7 @@
 
 POST https://payproxyapi.hubtel.com/items/initiate
 Content-Type: application/json
-Authorization: Basic {{base64("y9WwOXP:c19ed570efbe4eeba2968b182887bff0")}}
+Authorization: Basic y9WwOXP:c19ed570efbe4eeba2968b182887bff0
 Accept: application/json
 
 {

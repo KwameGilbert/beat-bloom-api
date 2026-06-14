@@ -30,24 +30,7 @@ export const HubtelService = {
 
     // Fallback/Mock check for local development without keys
     if (!env.HUBTEL_CLIENT_ID || !env.HUBTEL_CLIENT_SECRET || !env.HUBTEL_MERCHANT_ACCOUNT_NUMBER) {
-      if (env.NODE_ENV !== 'production') {
-        console.warn('⚠️ Hubtel credentials not configured. Returning mock checkout URL for development.');
-        
-        // Format return URL with verification parameters for development testing
-        const redirectUrl = `${env.HUBTEL_RETURN_URL || `${env.FRONTEND_URL}/checkout`}?reference=${clientReference}`;
-        
-        return {
-          status: 'Success',
-          responseCode: '0000',
-          data: {
-            checkoutUrl: redirectUrl,
-            checkoutId: `MOCK_CH_ID_${Date.now()}`,
-            clientReference,
-            checkoutDirectUrl: redirectUrl
-          }
-        };
-      }
-      throw new Error('Hubtel API credentials (HUBTEL_CLIENT_ID, HUBTEL_CLIENT_SECRET, HUBTEL_MERCHANT_ACCOUNT_NUMBER) are not configured in environment variables.');
+      throw new Error('Payment API credentials are not configured in environment variables.');
     }
 
     const payload = {
