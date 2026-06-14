@@ -1,0 +1,129 @@
+###############################################################################
+# Hubtel Online Checkout - Sample HTTP Requests
+# Documentation: https://developers.hubtel.com/reference/online-checkout
+###############################################################################
+
+### ==========================================================================
+### 1. INITIATE CHECKOUT (POST)
+### This is what BeatBloom sends to Hubtel to create a checkout session.
+### Hubtel returns a checkoutUrl that the customer is redirected to.
+### ==========================================================================
+
+POST https://payproxyapi.hubtel.com/items/initiate
+Content-Type: application/json
+Authorization: Basic {{base64("y9WwOXP:c19ed570efbe4eeba2968b182887bff0")}}
+Accept: application/json
+
+{
+  "totalAmount": 51.74,
+  "description": "Beat Purchase - Order BB-1781461113773-183",
+  "callbackUrl": "https://beat-bloom-api.onrender.com/api/payments/webhook",
+  "returnUrl": "https://beatbloom.vercel.app/checkout?reference=BB-1781461113773-183",
+  "cancellationUrl": "https://beatbloom.vercel.app/checkout?status=cancelled",
+  "merchantAccountNumber": "2039565",
+  "clientReference": "BB-1781461113773-183",
+  "payeeName": "Kwame Gilbert",
+  "payeeEmail": "kwamegilbert1114@gmail.com"
+}
+
+### --------------------------------------------------------------------------
+### EXPECTED SUCCESSFUL RESPONSE (200 OK):
+### --------------------------------------------------------------------------
+# {
+#   "status": "Success",
+#   "responseCode": "0000",
+#   "data": {
+#     "checkoutUrl": "https://pay.hubtel.com/checkout/abc123xyz",
+#     "checkoutId": "2021013007303400000005500010088",
+#     "checkoutDirectUrl": "https://pay.hubtel.com/checkout/direct/abc123xyz",
+#     "clientReference": "BB-1781461113773-183"
+#   }
+# }
+###
+### NOTE: The "checkoutUrl" above would be Hubtel's hosted payment page
+### (e.g. https://pay.hubtel.com/checkout/...) — NOT your frontend URL.
+### Your frontend redirects the customer to this Hubtel URL.
+### --------------------------------------------------------------------------
+
+
+### ==========================================================================
+### 2. CHECK TRANSACTION STATUS (GET)
+### After the customer pays, verify the transaction status.
+### Called from the webhook handler or return URL verification.
+### ==========================================================================
+
+GET https://api-txnstatus.hubtel.com/transactions/2039565/status?clientReference=BB-1781461113773-183
+Authorization: Basic {{base64("y9WwOXP:c19ed570efbe4eeba2968b182887bff0")}}
+Accept: application/json
+
+### --------------------------------------------------------------------------
+### EXPECTED SUCCESSFUL RESPONSE (200 OK):
+### --------------------------------------------------------------------------
+# {
+#   "message": "Successful",
+#   "responseCode": "0000",
+#   "data": {
+#     "date": "2026-06-14T18:30:00Z",
+#     "status": "Paid",
+#     "transactionId": "2021013007303400000005500010088",
+#     "externalTransactionId": "000000000000",
+#     "paymentMethod": "mobilemoney",
+#     "clientReference": "BB-1781461113773-183",
+#     "currencyCode": "GHS",
+#     "amount": 51.74,
+#     "charges": 1.04,
+#     "amountAfterCharges": 50.70,
+#     "isFulfilled": true
+#   }
+# }
+### --------------------------------------------------------------------------
+
+
+### ==========================================================================
+### 3. WEBHOOK CALLBACK (POST) — Sent BY Hubtel TO your server
+### Hubtel posts to your callbackUrl when payment status changes.
+### Your server receives this at: POST /api/payments/webhook
+### ==========================================================================
+
+# Hubtel sends a GET or POST to your callbackUrl with query parameters:
+#
+# GET https://beat-bloom-api.onrender.com/api/payments/webhook
+#     ?status=Success
+#     &clientReference=BB-1781461113773-183
+#     &transactionId=2021013007303400000005500010088
+#
+# Your server should:
+#   1. Extract the clientReference from the query/body
+#   2. Call the Status Check API (request #2 above) to VERIFY the payment
+#   3. If verified as "Paid", call OrderService.markOrderAsPaid(reference, data)
+#   4. Return HTTP 200 to acknowledge receipt
+
+
+### ==========================================================================
+### 4. AUTHORIZATION HEADER EXPLAINED
+### ==========================================================================
+#
+# Authorization: Basic <base64(CLIENT_ID:CLIENT_SECRET)>
+#
+# For your credentials:
+#   CLIENT_ID     = y9WwOXP
+#   CLIENT_SECRET = c19ed570efbe4eeba2968b182887bff0
+#   Combined      = y9WwOXP:c19ed570efbe4eeba2968b182887bff0
+#   Base64        = (run: echo -n "y9WwOXP:c19ed570efbe4eeba2968b182887bff0" | base64)
+#
+# This is already handled by HubtelService.getAuthHeader()
+
+
+### ==========================================================================
+### FLOW SUMMARY
+### ==========================================================================
+#
+# 1. Frontend → Backend:  POST /api/orders     (create order)
+# 2. Backend  → Hubtel:   POST /items/initiate  (get checkoutUrl)
+# 3. Backend  → Frontend: returns { checkoutUrl: "https://pay.hubtel.com/..." }
+# 4. Frontend → Hubtel:   window.location.href = checkoutUrl  (redirect user)
+# 5. Customer pays on Hubtel's hosted page
+# 6. Hubtel   → Backend:  GET /api/payments/webhook?status=Success&clientReference=...
+# 7. Backend  → Hubtel:   GET /transactions/.../status  (verify payment)
+# 8. Hubtel   → Frontend: redirects customer to returnUrl with ?reference=...
+# 9. Frontend → Backend:  GET /api/payments/verify/:reference  (confirm on frontend)

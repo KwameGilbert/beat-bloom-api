@@ -271,7 +271,7 @@ export const OrderService = {
       for (const item of items) {
         const tier = await trx('licenseTiers').where('id', item.licenseTierId).first();
 
-        // Create User Purchase Record
+        // Create User Purchase Record (skip if already exists from a previous verification)
         await trx('userPurchases').insert({
           userId: order.userId,
           beatId: item.beatId,
@@ -279,19 +279,24 @@ export const OrderService = {
           licenseTierId: item.licenseTierId,
           licenseType: tier?.tierType || 'mp3',
           purchasedAt: new Date(),
-        });
+        }).onConflict(['userId', 'beatId', 'licenseTierId']).ignore();
 
-        // Record Producer Earnings
-        await trx('producerEarnings').insert({
-          producerId: item.producerId,
-          orderId: order.id,
-          orderItemId: item.id,
-          beatId: item.beatId,
-          grossAmount: item.price,
-          platformFee: item.platformFee,
-          netAmount: item.producerEarnings,
-          status: 'available',
-        });
+        // Record Producer Earnings (skip if already recorded for this order item)
+        const existingEarning = await trx('producerEarnings')
+          .where({ orderItemId: item.id })
+          .first();
+        if (!existingEarning) {
+          await trx('producerEarnings').insert({
+            producerId: item.producerId,
+            orderId: order.id,
+            orderItemId: item.id,
+            beatId: item.beatId,
+            grossAmount: item.price,
+            platformFee: item.platformFee,
+            netAmount: item.producerEarnings,
+            status: 'available',
+          });
+        }
 
         // If exclusive, mark beat as sold
         if (item.isExclusive) {
