@@ -25,21 +25,26 @@ export const HubtelService = {
       clientReference,
       payeeName,
       payeeMobileNumber,
-      payeeEmail
+      payeeEmail,
+      returnUrl,
+      cancellationUrl
     } = params;
-
-
 
     if (!env.HUBTEL_CLIENT_ID || !env.HUBTEL_CLIENT_SECRET || !env.HUBTEL_MERCHANT_ACCOUNT_NUMBER) {
       throw new Error('Payment API credentials are not configured in environment variables.');
     }
 
+    // Convert USD to GHS since Hubtel processes in GHS (cuz payment provider uses ghs)
+    const USD_TO_GHS_RATE = 15.5;
+    const amountInGHS = totalAmount * USD_TO_GHS_RATE;
+    console.log(`[HubtelService] Converting USD totalAmount ${totalAmount} to GHS at rate ${USD_TO_GHS_RATE}: ${amountInGHS}`);
+
     const payload = {
-      totalAmount: parseFloat(totalAmount.toFixed(2)),
+      totalAmount: parseFloat(amountInGHS.toFixed(2)),
       description,
       callbackUrl: env.HUBTEL_CALLBACK_URL,
-      returnUrl: `${env.HUBTEL_RETURN_URL || `${env.FRONTEND_URL}/checkout`}?reference=${clientReference}`,
-      cancellationUrl: env.HUBTEL_CANCELLATION_URL || `${env.FRONTEND_URL}/checkout?status=cancelled`,
+      returnUrl: `${returnUrl || env.HUBTEL_RETURN_URL || `${env.FRONTEND_URL}/checkout`}?reference=${clientReference}`,
+      cancellationUrl: cancellationUrl || env.HUBTEL_CANCELLATION_URL || `${env.FRONTEND_URL}/checkout?status=cancelled`,
       merchantAccountNumber: env.HUBTEL_MERCHANT_ACCOUNT_NUMBER,
       clientReference,
       payeeName: payeeName || undefined,
@@ -111,16 +116,49 @@ export const HubtelService = {
         }
       });
 
-      const result = await response.json();
+      // Read raw text first to handle non-JSON responses (HTML error pages, etc.)
+      const rawText = await response.text();
+      let result;
+
+      try {
+        result = JSON.parse(rawText);
+      } catch {
+        // Hubtel returned non-JSON (HTML error page, etc.)
+        console.warn(`Hubtel status API returned non-JSON (HTTP ${response.status}):`, rawText.substring(0, 200));
+        return {
+          message: 'Transaction not found or not yet processed',
+          responseCode: 'PENDING',
+          data: {
+            status: 'Unpaid',
+            clientReference
+          }
+        };
+      }
 
       if (!response.ok) {
-        throw new Error(result.message || `Hubtel status check failed with status ${response.status}`);
+        console.warn(`Hubtel status check returned HTTP ${response.status}:`, result);
+        return {
+          message: result.message || `Status check returned HTTP ${response.status}`,
+          responseCode: result.responseCode || 'ERROR',
+          data: {
+            status: 'Unpaid',
+            clientReference
+          }
+        };
       }
 
       return result;
     } catch (error) {
       console.error('Hubtel Check Status API Error:', error);
-      throw error;
+      // Return a structured error instead of throwing during polling
+      return {
+        message: error.message || 'Network error during status check',
+        responseCode: 'ERROR',
+        data: {
+          status: 'Unpaid',
+          clientReference
+        }
+      };
     }
   }
 };

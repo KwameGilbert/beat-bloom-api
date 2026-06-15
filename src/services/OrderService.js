@@ -13,7 +13,7 @@ export const OrderService = {
    * Create a new order from cart
    */
   async createOrder(userId, data) {
-    const { items, paymentMethod, email } = data;
+    const { items, paymentMethod, email, returnUrl, cancellationUrl } = data;
 
     if (!items || items.length === 0) {
       throw new BadRequestError('Order items are required');
@@ -109,6 +109,8 @@ export const OrderService = {
         clientReference: order.orderNumber,
         payeeName: buyer?.name || 'Customer',
         payeeEmail: order.email,
+        returnUrl,
+        cancellationUrl
       });
 
       if (initiateResponse && initiateResponse.status === 'Success' && initiateResponse.data) {
