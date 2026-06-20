@@ -17,7 +17,7 @@ import QRCode from 'qrcode';
 import crypto from 'crypto';
 
 /**
- * Authentication Service for BeatBloom
+ * Authentication Service for EasyBeats
  * Handles user authentication, registration, and account management
  */
 export class AuthService {
@@ -595,7 +595,7 @@ export class AuthService {
     // Store secret temporarily (unverified)
     await UserModel.update(userId, { mfaSecret: secret });
 
-    const otpauth = authenticator.keyuri(user.email, 'BeatBloom', secret);
+    const otpauth = authenticator.keyuri(user.email, 'EasyBeats', secret);
     const qrCode = await QRCode.toDataURL(otpauth);
 
     return { secret, qrCode };

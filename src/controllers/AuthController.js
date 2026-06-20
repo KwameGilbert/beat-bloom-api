@@ -3,7 +3,7 @@ import { ApiResponse } from '../utils/response.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
- * Authentication Controller for BeatBloom
+ * Authentication Controller for EasyBeats
  */
 export class AuthController {
   /**

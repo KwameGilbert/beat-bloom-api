@@ -5,7 +5,7 @@
 
 ### ==========================================================================
 ### 1. INITIATE CHECKOUT (POST)
-### This is what BeatBloom sends to Hubtel to create a checkout session.
+### This is what EasyBeats sends to Hubtel to create a checkout session.
 ### Hubtel returns a checkoutUrl that the customer is redirected to.
 ### ==========================================================================
 
@@ -18,8 +18,8 @@ Accept: application/json
   "totalAmount": 51.74,
   "description": "Beat Purchase - Order BB-1781461113773-183",
   "callbackUrl": "https://beat-bloom-api.onrender.com/api/payments/webhook",
-  "returnUrl": "https://beatbloom.vercel.app/checkout?reference=BB-1781461113773-183",
-  "cancellationUrl": "https://beatbloom.vercel.app/checkout?status=cancelled",
+  "returnUrl": "https://EasyBeats.vercel.app/checkout?reference=BB-1781461113773-183",
+  "cancellationUrl": "https://EasyBeats.vercel.app/checkout?status=cancelled",
   "merchantAccountNumber": "2039565",
   "clientReference": "BB-1781461113773-183",
   "payeeName": "Kwame Gilbert",

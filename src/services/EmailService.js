@@ -3,13 +3,13 @@ import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 
 /**
- * Email Service for BeatBloom
- * Handles all transactional emails with BeatBloom branding
+ * Email Service for EasyBeats
+ * Handles all transactional emails with EasyBeats branding
  */
 class EmailService {
   constructor() {
     this.transporter = null;
-    this.from = env.EMAIL_FROM || `BeatBloom <noreply@beatbloom.com>`;
+    this.from = env.EMAIL_FROM || `EasyBeats <noreply@EasyBeats.com>`;
     this.isConfigured = !!(env.EMAIL_HOST && env.EMAIL_USER);
 
     if (this.isConfigured) {
@@ -47,7 +47,7 @@ class EmailService {
                 <!-- Header -->
                 <tr>
                   <td style="background:linear-gradient(135deg,#ea580c,#f97316);padding:32px;text-align:center;">
-                    <h1 style="margin:0;color:white;font-size:28px;font-weight:700;">🎵 BeatBloom</h1>
+                    <h1 style="margin:0;color:white;font-size:28px;font-weight:700;">🎵 EasyBeats</h1>
                   </td>
                 </tr>
                 <!-- Content -->
@@ -60,10 +60,10 @@ class EmailService {
                 <tr>
                   <td style="padding:24px 32px;border-top:1px solid #262626;text-align:center;">
                     <p style="margin:0;color:#737373;font-size:12px;">
-                      ${footerText || '© 2026 BeatBloom. All rights reserved.'}
+                      ${footerText || '© 2026 EasyBeats. All rights reserved.'}
                     </p>
                     <p style="margin:8px 0 0;color:#525252;font-size:11px;">
-                      You received this email because you signed up for BeatBloom.
+                      You received this email because you signed up for EasyBeats.
                     </p>
                   </td>
                 </tr>
@@ -126,7 +126,7 @@ class EmailService {
       <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Verify Your Email</h2>
       <p style="color:#a3a3a3;margin:0 0 24px;font-size:16px;line-height:1.6;">
         Hi ${name},<br><br>
-        Thanks for joining BeatBloom! Please verify your email address to get started with discovering and creating amazing beats.
+        Thanks for joining EasyBeats! Please verify your email address to get started with discovering and creating amazing beats.
       </p>
       <div style="text-align:center;">
         ${this.getButton('Verify Email', url)}
@@ -142,7 +142,7 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Verify your email - BeatBloom`,
+      subject: `Verify your email - EasyBeats`,
       html: this.getEmailTemplate(content),
       text: `Hi ${name}, verify your email: ${url}`,
     });
@@ -174,7 +174,7 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Reset your password - BeatBloom`,
+      subject: `Reset your password - EasyBeats`,
       html: this.getEmailTemplate(content),
       text: `Hi ${name}, reset your password: ${url}`,
     });
@@ -203,7 +203,7 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `${otp} is your verification code - BeatBloom`,
+      subject: `${otp} is your verification code - EasyBeats`,
       html: this.getEmailTemplate(content),
       text: `Hi ${name}, your password reset code is: ${otp}`,
     });
@@ -214,7 +214,7 @@ class EmailService {
    */
   async sendWelcomeEmail(to, name) {
     const content = `
-      <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Welcome to BeatBloom! 🎉</h2>
+      <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Welcome to EasyBeats! 🎉</h2>
       <p style="color:#a3a3a3;margin:0 0 24px;font-size:16px;line-height:1.6;">
         Hi ${name},<br><br>
         Your email has been verified and your account is now active! You're all set to explore the world of premium beats.
@@ -235,9 +235,9 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Welcome to BeatBloom! 🎵`,
+      subject: `Welcome to EasyBeats! 🎵`,
       html: this.getEmailTemplate(content),
-      text: `Welcome to BeatBloom, ${name}! Your account is now active.`,
+      text: `Welcome to EasyBeats, ${name}! Your account is now active.`,
     });
   }
 
@@ -261,7 +261,7 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Password changed - BeatBloom`,
+      subject: `Password changed - EasyBeats`,
       html: this.getEmailTemplate(content),
       text: `Hi ${name}, your password was changed. If this wasn't you, contact support.`,
     });
@@ -322,7 +322,7 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Order Confirmed #${order.orderNumber} - BeatBloom`,
+      subject: `Order Confirmed #${order.orderNumber} - EasyBeats`,
       html: this.getEmailTemplate(content),
       text: `Order confirmed! Order #${order.orderNumber}. Total: $${Number(order.total || 0).toFixed(2)}`,
     });
@@ -355,7 +355,7 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Payout ${payout.status === 'completed' ? 'Completed' : 'Processing'} - BeatBloom`,
+      subject: `Payout ${payout.status === 'completed' ? 'Completed' : 'Processing'} - EasyBeats`,
       html: this.getEmailTemplate(content),
       text: `Payout ${payout.status}: $${payout.amount.toFixed(2)} to ${payout.method}`,
     });
@@ -368,7 +368,7 @@ class EmailService {
     const content = `
       <h2 style="color:#fafafa;margin:0 0 16px;font-size:24px;">Test Email Successful! 🚀</h2>
       <p style="color:#a3a3a3;margin:0 0 24px;font-size:16px;line-height:1.6;">
-        If you're reading this, your BeatBloom email configuration is working perfectly!
+        If you're reading this, your EasyBeats email configuration is working perfectly!
       </p>
       <div style="background:#262626;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #22c55e;">
         <p style="color:#fafafa;margin:0;font-weight:600;">Configuration Details:</p>
@@ -383,9 +383,9 @@ class EmailService {
 
     return this.send({
       to,
-      subject: `Test Email - BeatBloom Configuration`,
+      subject: `Test Email - EasyBeats Configuration`,
       html: this.getEmailTemplate(content),
-      text: `Your BeatBloom email configuration is working! Host: ${env.EMAIL_HOST}`,
+      text: `Your EasyBeats email configuration is working! Host: ${env.EMAIL_HOST}`,
     });
   }
 }

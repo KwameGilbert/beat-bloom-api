@@ -2,7 +2,7 @@ import { BaseModel } from './BaseModel.js';
 import { passwordHasher } from '../utils/passwordHasher.js';
 
 /**
- * User Model for BeatBloom
+ * User Model for EasyBeats
  * Handles user accounts with authentication
  */
 class UserModelClass extends BaseModel {

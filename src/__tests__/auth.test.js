@@ -44,7 +44,7 @@ describe('Auth API', () => {
   describe('POST /auth/register', () => {
     it('should register a new user successfully', async () => {
       const res = await request(app).post(`${API_BASE}/register`).send({
-        email: 'newuser@beatbloom.com',
+        email: 'newuser@EasyBeats.com',
         password: 'SecurePassword123!',
         name: 'New User',
         role: 'artist',
@@ -53,7 +53,7 @@ describe('Auth API', () => {
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
       expect(res.body.data.user).toHaveProperty('id');
-      expect(res.body.data.user.email).toBe('newuser@beatbloom.com');
+      expect(res.body.data.user.email).toBe('newuser@EasyBeats.com');
       expect(res.body.data.user.name).toBe('New User');
       expect(res.body.data.user.role).toBe('artist');
       expect(res.body.data.accessToken).toBeDefined();
@@ -64,7 +64,7 @@ describe('Auth API', () => {
 
     it('should register a producer user', async () => {
       const res = await request(app).post(`${API_BASE}/register`).send({
-        email: 'producer@beatbloom.com',
+        email: 'producer@EasyBeats.com',
         password: 'SecurePassword123!',
         name: 'Producer User',
         role: 'producer',
@@ -76,11 +76,11 @@ describe('Auth API', () => {
 
     it('should fail with duplicate email', async () => {
       // Create first user
-      await createTestUser({ email: 'duplicate@beatbloom.com' });
+      await createTestUser({ email: 'duplicate@EasyBeats.com' });
 
       // Try to register with same email
       const res = await request(app).post(`${API_BASE}/register`).send({
-        email: 'duplicate@beatbloom.com',
+        email: 'duplicate@EasyBeats.com',
         password: 'SecurePassword123!',
         name: 'Duplicate User',
       });
@@ -103,7 +103,7 @@ describe('Auth API', () => {
 
     it('should fail with short password', async () => {
       const res = await request(app).post(`${API_BASE}/register`).send({
-        email: 'user@beatbloom.com',
+        email: 'user@EasyBeats.com',
         password: 'short',
         name: 'Short Password User',
       });
@@ -114,7 +114,7 @@ describe('Auth API', () => {
 
     it('should fail without required fields', async () => {
       const res = await request(app).post(`${API_BASE}/register`).send({
-        email: 'user@beatbloom.com',
+        email: 'user@EasyBeats.com',
         // Missing password and name
       });
 
@@ -129,11 +129,11 @@ describe('Auth API', () => {
   describe('POST /auth/login', () => {
     it('should login successfully with valid credentials', async () => {
       const { user, password } = await createTestUser({
-        email: 'login@beatbloom.com',
+        email: 'login@EasyBeats.com',
       });
 
       const res = await request(app).post(`${API_BASE}/login`).send({
-        email: 'login@beatbloom.com',
+        email: 'login@EasyBeats.com',
         password,
       });
 
@@ -142,17 +142,17 @@ describe('Auth API', () => {
       expect(res.body.data.accessToken).toBeDefined();
       expect(res.body.data.refreshToken).toBeDefined();
       expect(res.body.data.user.id).toBe(user.id);
-      expect(res.body.data.user.email).toBe('login@beatbloom.com');
+      expect(res.body.data.user.email).toBe('login@EasyBeats.com');
     });
 
     it('should be case-insensitive for email', async () => {
       await createTestUser({
-        email: 'CaseTest@beatbloom.com',
+        email: 'CaseTest@EasyBeats.com',
         password: 'TestPassword123!',
       });
 
       const res = await request(app).post(`${API_BASE}/login`).send({
-        email: 'casetest@BEATBLOOM.COM',
+        email: 'casetest@EasyBeats.COM',
         password: 'TestPassword123!',
       });
 
@@ -162,12 +162,12 @@ describe('Auth API', () => {
 
     it('should fail with wrong password', async () => {
       await createTestUser({
-        email: 'wrongpass@beatbloom.com',
+        email: 'wrongpass@EasyBeats.com',
         password: 'CorrectPassword123!',
       });
 
       const res = await request(app).post(`${API_BASE}/login`).send({
-        email: 'wrongpass@beatbloom.com',
+        email: 'wrongpass@EasyBeats.com',
         password: 'WrongPassword123!',
       });
 
@@ -178,7 +178,7 @@ describe('Auth API', () => {
 
     it('should fail with non-existent email', async () => {
       const res = await request(app).post(`${API_BASE}/login`).send({
-        email: 'nonexistent@beatbloom.com',
+        email: 'nonexistent@EasyBeats.com',
         password: 'AnyPassword123!',
       });
 
@@ -188,13 +188,13 @@ describe('Auth API', () => {
 
     it('should fail with inactive user', async () => {
       await createTestUser({
-        email: 'inactive@beatbloom.com',
+        email: 'inactive@EasyBeats.com',
         password: 'TestPassword123!',
         status: 'inactive',
       });
 
       const res = await request(app).post(`${API_BASE}/login`).send({
-        email: 'inactive@beatbloom.com',
+        email: 'inactive@EasyBeats.com',
         password: 'TestPassword123!',
       });
 
@@ -209,7 +209,7 @@ describe('Auth API', () => {
   describe('GET /auth/me', () => {
     it('should return current user profile', async () => {
       const { user, accessToken } = await createAuthenticatedUser({
-        email: 'profile@beatbloom.com',
+        email: 'profile@EasyBeats.com',
         name: 'Profile User',
       });
 
@@ -218,7 +218,7 @@ describe('Auth API', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.id).toBe(user.id);
-      expect(res.body.data.email).toBe('profile@beatbloom.com');
+      expect(res.body.data.email).toBe('profile@EasyBeats.com');
       expect(res.body.data.name).toBe('Profile User');
       expect(res.body.data.password).toBeUndefined();
     });
@@ -244,7 +244,7 @@ describe('Auth API', () => {
   describe('PATCH /auth/me', () => {
     it('should update user profile', async () => {
       const { accessToken } = await createAuthenticatedUser({
-        email: 'update@beatbloom.com',
+        email: 'update@EasyBeats.com',
         name: 'Original Name',
       });
 
@@ -339,7 +339,7 @@ describe('Auth API', () => {
   describe('POST /auth/change-password', () => {
     it('should change password successfully', async () => {
       const { accessToken, password } = await createAuthenticatedUser({
-        email: 'changepass@beatbloom.com',
+        email: 'changepass@EasyBeats.com',
       });
 
       const res = await request(app)
@@ -355,7 +355,7 @@ describe('Auth API', () => {
 
       // Verify can login with new password
       const loginRes = await request(app).post(`${API_BASE}/login`).send({
-        email: 'changepass@beatbloom.com',
+        email: 'changepass@EasyBeats.com',
         password: 'NewSecurePassword123!',
       });
 

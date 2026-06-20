@@ -33,11 +33,11 @@ describe('Password Reset & Email Verification', () => {
   // ==========================================
   describe('POST /auth/forgot-password', () => {
     it('should accept request for existing email', async () => {
-      await createTestUser({ email: 'reset@beatbloom.com' });
+      await createTestUser({ email: 'reset@EasyBeats.com' });
 
       const res = await request(app)
         .post(`${API_BASE}/forgot-password`)
-        .send({ email: 'reset@beatbloom.com' });
+        .send({ email: 'reset@EasyBeats.com' });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -48,7 +48,7 @@ describe('Password Reset & Email Verification', () => {
     it('should accept request for non-existent email (no reveal)', async () => {
       const res = await request(app)
         .post(`${API_BASE}/forgot-password`)
-        .send({ email: 'nonexistent@beatbloom.com' });
+        .send({ email: 'nonexistent@EasyBeats.com' });
 
       // Should still return 200 to not reveal if email exists
       expect(res.status).toBe(200);
@@ -56,9 +56,9 @@ describe('Password Reset & Email Verification', () => {
     });
 
     it('should create a password reset token', async () => {
-      const { user } = await createTestUser({ email: 'token@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'token@EasyBeats.com' });
 
-      await request(app).post(`${API_BASE}/forgot-password`).send({ email: 'token@beatbloom.com' });
+      await request(app).post(`${API_BASE}/forgot-password`).send({ email: 'token@EasyBeats.com' });
 
       // Check token was created in database
       const token = await db('authTokens')
@@ -86,7 +86,7 @@ describe('Password Reset & Email Verification', () => {
   describe('POST /auth/reset-password', () => {
     it('should reset password with valid token', async () => {
       const { user } = await createTestUser({
-        email: 'resetpass@beatbloom.com',
+        email: 'resetpass@EasyBeats.com',
         password: 'OldPassword123!',
       });
 
@@ -109,7 +109,7 @@ describe('Password Reset & Email Verification', () => {
 
       // Verify login with new password works
       const loginRes = await request(app).post(`${API_BASE}/login`).send({
-        email: 'resetpass@beatbloom.com',
+        email: 'resetpass@EasyBeats.com',
         password: 'NewPassword123!',
       });
 
@@ -127,7 +127,7 @@ describe('Password Reset & Email Verification', () => {
     });
 
     it('should fail with expired token', async () => {
-      const { user } = await createTestUser({ email: 'expired@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'expired@EasyBeats.com' });
 
       // Create an expired token
       const token = 'expired-token-123456';
@@ -148,7 +148,7 @@ describe('Password Reset & Email Verification', () => {
     });
 
     it('should fail with already-used token', async () => {
-      const { user } = await createTestUser({ email: 'used@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'used@EasyBeats.com' });
 
       // Create a used token
       const token = 'used-token-123456';
@@ -169,7 +169,7 @@ describe('Password Reset & Email Verification', () => {
     });
 
     it('should fail with short password', async () => {
-      const { user } = await createTestUser({ email: 'short@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'short@EasyBeats.com' });
 
       const token = 'valid-token-short';
       await db('authTokens').insert({
@@ -194,7 +194,7 @@ describe('Password Reset & Email Verification', () => {
   describe('GET /auth/verify-email', () => {
     it('should verify email with valid token', async () => {
       const { user } = await createTestUser({
-        email: 'verify@beatbloom.com',
+        email: 'verify@EasyBeats.com',
       });
 
       // Create verification token
@@ -230,7 +230,7 @@ describe('Password Reset & Email Verification', () => {
     });
 
     it('should fail with expired token', async () => {
-      const { user } = await createTestUser({ email: 'expiredverify@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'expiredverify@EasyBeats.com' });
 
       const token = 'expired-verify-token';
       await db('authTokens').insert({
@@ -252,13 +252,13 @@ describe('Password Reset & Email Verification', () => {
   describe('POST /auth/resend-verification', () => {
     it('should resend verification email', async () => {
       const { user } = await createTestUser({
-        email: 'resend@beatbloom.com',
+        email: 'resend@EasyBeats.com',
         // emailVerifiedAt is null by default
       });
 
       const res = await request(app)
         .post(`${API_BASE}/resend-verification`)
-        .send({ email: 'resend@beatbloom.com' });
+        .send({ email: 'resend@EasyBeats.com' });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -276,7 +276,7 @@ describe('Password Reset & Email Verification', () => {
     it('should fail for non-existent email (but not reveal)', async () => {
       const res = await request(app)
         .post(`${API_BASE}/resend-verification`)
-        .send({ email: 'nonexistent@beatbloom.com' });
+        .send({ email: 'nonexistent@EasyBeats.com' });
 
       // Should still return 200 to not reveal if email exists
       expect(res.status).toBe(200);
@@ -284,13 +284,13 @@ describe('Password Reset & Email Verification', () => {
 
     it('should fail for already verified email', async () => {
       await createTestUser({
-        email: 'alreadyverified@beatbloom.com',
+        email: 'alreadyverified@EasyBeats.com',
         emailVerifiedAt: new Date(),
       });
 
       const res = await request(app)
         .post(`${API_BASE}/resend-verification`)
-        .send({ email: 'alreadyverified@beatbloom.com' });
+        .send({ email: 'alreadyverified@EasyBeats.com' });
 
       expect(res.status).toBe(400);
       expect(res.body.message).toContain('already verified');

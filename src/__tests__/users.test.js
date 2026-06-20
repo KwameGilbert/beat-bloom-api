@@ -77,8 +77,8 @@ describe('User Management API (Admin)', () => {
       const { accessToken } = await createAdminUser();
 
       // Create some test users
-      await createTestUser({ email: 'user1@beatbloom.com', name: 'User One' });
-      await createTestUser({ email: 'user2@beatbloom.com', name: 'User Two' });
+      await createTestUser({ email: 'user1@EasyBeats.com', name: 'User One' });
+      await createTestUser({ email: 'user2@EasyBeats.com', name: 'User Two' });
 
       const res = await request(app).get(API_BASE).set(getAuthHeader(accessToken));
 
@@ -93,8 +93,8 @@ describe('User Management API (Admin)', () => {
     it('should filter users by status', async () => {
       const { accessToken } = await createAdminUser();
 
-      await createTestUser({ email: 'active@beatbloom.com', status: 'active' });
-      await createTestUser({ email: 'suspended@beatbloom.com', status: 'suspended' });
+      await createTestUser({ email: 'active@EasyBeats.com', status: 'active' });
+      await createTestUser({ email: 'suspended@EasyBeats.com', status: 'suspended' });
 
       const res = await request(app)
         .get(`${API_BASE}?status=suspended`)
@@ -107,8 +107,8 @@ describe('User Management API (Admin)', () => {
     it('should filter users by role', async () => {
       const { accessToken } = await createAdminUser();
 
-      await createTestUser({ email: 'producer@beatbloom.com', role: 'producer' });
-      await createTestUser({ email: 'artist@beatbloom.com', role: 'artist' });
+      await createTestUser({ email: 'producer@EasyBeats.com', role: 'producer' });
+      await createTestUser({ email: 'artist@EasyBeats.com', role: 'artist' });
 
       const res = await request(app)
         .get(`${API_BASE}?role=producer`)
@@ -121,8 +121,8 @@ describe('User Management API (Admin)', () => {
     it('should search users by email or name', async () => {
       const { accessToken } = await createAdminUser();
 
-      await createTestUser({ email: 'searchme@beatbloom.com', name: 'Searchable User' });
-      await createTestUser({ email: 'other@beatbloom.com', name: 'Other User' });
+      await createTestUser({ email: 'searchme@EasyBeats.com', name: 'Searchable User' });
+      await createTestUser({ email: 'other@EasyBeats.com', name: 'Other User' });
 
       const res = await request(app)
         .get(`${API_BASE}?search=searchme`)
@@ -130,7 +130,7 @@ describe('User Management API (Admin)', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(1);
-      expect(res.body.data[0].email).toBe('searchme@beatbloom.com');
+      expect(res.body.data[0].email).toBe('searchme@EasyBeats.com');
     });
 
     it('should paginate results', async () => {
@@ -138,7 +138,7 @@ describe('User Management API (Admin)', () => {
 
       // Create multiple users
       for (let i = 0; i < 5; i++) {
-        await createTestUser({ email: `user${i}@beatbloom.com` });
+        await createTestUser({ email: `user${i}@EasyBeats.com` });
       }
 
       const res = await request(app)
@@ -160,7 +160,7 @@ describe('User Management API (Admin)', () => {
       const { accessToken } = await createAdminUser();
 
       const res = await request(app).post(API_BASE).set(getAuthHeader(accessToken)).send({
-        email: 'newuser@beatbloom.com',
+        email: 'newuser@EasyBeats.com',
         password: 'SecurePassword123!',
         name: 'New User',
         role: 'artist',
@@ -168,7 +168,7 @@ describe('User Management API (Admin)', () => {
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.email).toBe('newuser@beatbloom.com');
+      expect(res.body.data.email).toBe('newuser@EasyBeats.com');
       expect(res.body.data.name).toBe('New User');
       expect(res.body.data.password).toBeUndefined();
     });
@@ -177,7 +177,7 @@ describe('User Management API (Admin)', () => {
       const { accessToken } = await createAdminUser();
 
       const res = await request(app).post(API_BASE).set(getAuthHeader(accessToken)).send({
-        email: 'newadmin@beatbloom.com',
+        email: 'newadmin@EasyBeats.com',
         password: 'SecurePassword123!',
         name: 'New Admin',
         role: 'admin',
@@ -189,10 +189,10 @@ describe('User Management API (Admin)', () => {
 
     it('should fail with duplicate email', async () => {
       const { accessToken } = await createAdminUser();
-      await createTestUser({ email: 'duplicate@beatbloom.com' });
+      await createTestUser({ email: 'duplicate@EasyBeats.com' });
 
       const res = await request(app).post(API_BASE).set(getAuthHeader(accessToken)).send({
-        email: 'duplicate@beatbloom.com',
+        email: 'duplicate@EasyBeats.com',
         password: 'SecurePassword123!',
         name: 'Duplicate',
       });
@@ -208,7 +208,7 @@ describe('User Management API (Admin)', () => {
     it('should get user by ID', async () => {
       const { accessToken } = await createAdminUser();
       const { user } = await createTestUser({
-        email: 'getuser@beatbloom.com',
+        email: 'getuser@EasyBeats.com',
         name: 'Get User',
       });
 
@@ -216,7 +216,7 @@ describe('User Management API (Admin)', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe(user.id);
-      expect(res.body.data.email).toBe('getuser@beatbloom.com');
+      expect(res.body.data.email).toBe('getuser@EasyBeats.com');
     });
 
     it('should return 404 for non-existent user', async () => {
@@ -235,7 +235,7 @@ describe('User Management API (Admin)', () => {
     it('should update user', async () => {
       const { accessToken } = await createAdminUser();
       const { user } = await createTestUser({
-        email: 'update@beatbloom.com',
+        email: 'update@EasyBeats.com',
         name: 'Original',
       });
 
@@ -268,7 +268,7 @@ describe('User Management API (Admin)', () => {
   describe('DELETE /users/:id', () => {
     it('should soft delete user', async () => {
       const { accessToken } = await createAdminUser();
-      const { user } = await createTestUser({ email: 'delete@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'delete@EasyBeats.com' });
 
       const res = await request(app)
         .delete(`${API_BASE}/${user.id}`)
@@ -368,7 +368,7 @@ describe('User Management API (Admin)', () => {
   describe('POST /users/:id/restore', () => {
     it('should restore deleted user', async () => {
       const { accessToken } = await createAdminUser();
-      const { user } = await createTestUser({ email: 'restore@beatbloom.com' });
+      const { user } = await createTestUser({ email: 'restore@EasyBeats.com' });
 
       // Soft delete the user first
       await request(app).delete(`${API_BASE}/${user.id}`).set(getAuthHeader(accessToken));

@@ -94,7 +94,7 @@ export const createAuthenticatedUser = async (overrides = {}) => {
  */
 export const createAdminUser = async () => {
   return createAuthenticatedUser({
-    email: `admin-${Date.now()}@beatbloom.com`,
+    email: `admin-${Date.now()}@EasyBeats.com`,
     name: 'Admin User',
     role: 'admin',
   });
@@ -105,7 +105,7 @@ export const createAdminUser = async () => {
  */
 export const createProducerUser = async () => {
   return createAuthenticatedUser({
-    email: `producer-${Date.now()}@beatbloom.com`,
+    email: `producer-${Date.now()}@EasyBeats.com`,
     name: 'Producer User',
     role: 'producer',
   });

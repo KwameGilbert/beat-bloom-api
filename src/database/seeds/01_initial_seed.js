@@ -1,5 +1,5 @@
 /**
- * BeatBloom Seed Data
+ * EasyBeats Seed Data
  *
  * Seeds the database with sample data for development and testing.
  *
@@ -59,7 +59,7 @@ export const seed = async function (knex) {
     .insert([
       {
         name: 'Admin User',
-        email: 'admin@beatbloom.com',
+        email: 'admin@EasyBeats.com',
         password: defaultPassword,
         role: 'admin',
         status: 'active',
@@ -71,7 +71,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'CloudNine',
-        email: 'cloudnine@beatbloom.com',
+        email: 'cloudnine@EasyBeats.com',
         password: defaultPassword,
         role: 'producer',
         status: 'active',
@@ -83,7 +83,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'SynthWave Pro',
-        email: 'synthwave@beatbloom.com',
+        email: 'synthwave@EasyBeats.com',
         password: defaultPassword,
         role: 'producer',
         status: 'active',
@@ -95,7 +95,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'UrbanFlow',
-        email: 'urbanflow@beatbloom.com',
+        email: 'urbanflow@EasyBeats.com',
         password: defaultPassword,
         role: 'producer',
         status: 'active',
@@ -107,7 +107,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'VibeMaster',
-        email: 'vibemaster@beatbloom.com',
+        email: 'vibemaster@EasyBeats.com',
         password: defaultPassword,
         role: 'producer',
         status: 'active',
@@ -119,7 +119,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'ShadowProd',
-        email: 'shadowprod@beatbloom.com',
+        email: 'shadowprod@EasyBeats.com',
         password: defaultPassword,
         role: 'producer',
         status: 'active',
@@ -131,7 +131,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'Alex Producer',
-        email: 'alex@beatbloom.com',
+        email: 'alex@EasyBeats.com',
         password: defaultPassword,
         role: 'producer',
         status: 'active',
@@ -143,7 +143,7 @@ export const seed = async function (knex) {
       },
       {
         name: 'Test Artist',
-        email: 'artist@beatbloom.com',
+        email: 'artist@EasyBeats.com',
         password: defaultPassword,
         role: 'artist',
         status: 'active',
@@ -170,7 +170,7 @@ export const seed = async function (knex) {
   const producers = await knex('producers')
     .insert([
       {
-        userId: userMap['cloudnine@beatbloom.com'].id,
+        userId: userMap['cloudnine@EasyBeats.com'].id,
         username: 'cloudnine',
         displayName: 'CloudNine',
         bio: 'Multi-platinum producer specializing in dark trap and melodic beats. Known for atmospheric soundscapes and hard-hitting 808s.',
@@ -181,7 +181,7 @@ export const seed = async function (knex) {
         isVerified: true,
       },
       {
-        userId: userMap['synthwave@beatbloom.com'].id,
+        userId: userMap['synthwave@EasyBeats.com'].id,
         username: 'synthwave',
         displayName: 'SynthWave Pro',
         bio: 'Retro-futuristic producer bringing the 80s back with modern production techniques. Specializes in synthwave and electronic music.',
@@ -192,7 +192,7 @@ export const seed = async function (knex) {
         isVerified: true,
       },
       {
-        userId: userMap['urbanflow@beatbloom.com'].id,
+        userId: userMap['urbanflow@EasyBeats.com'].id,
         username: 'urbanflow',
         displayName: 'UrbanFlow',
         bio: 'Golden era hip hop meets modern production. Creating timeless beats with soul and authenticity.',
@@ -203,7 +203,7 @@ export const seed = async function (knex) {
         isVerified: true,
       },
       {
-        userId: userMap['vibemaster@beatbloom.com'].id,
+        userId: userMap['vibemaster@EasyBeats.com'].id,
         username: 'vibemaster',
         displayName: 'VibeMaster',
         bio: 'Experimental producer blending electronic, soul, and R&B. Pushing boundaries with innovative sound design.',
@@ -214,7 +214,7 @@ export const seed = async function (knex) {
         isVerified: true,
       },
       {
-        userId: userMap['shadowprod@beatbloom.com'].id,
+        userId: userMap['shadowprod@EasyBeats.com'].id,
         username: 'shadow',
         displayName: 'ShadowProd',
         bio: 'Dark, aggressive production for drill and trap. Working with top artists in the UK drill scene.',
@@ -224,7 +224,7 @@ export const seed = async function (knex) {
         isVerified: true,
       },
       {
-        userId: userMap['alex@beatbloom.com'].id,
+        userId: userMap['alex@EasyBeats.com'].id,
         username: 'alexproducer',
         displayName: 'Alex Producer',
         bio: 'Independent beatmaker creating unique sounds. Available for custom work.',
@@ -247,7 +247,7 @@ export const seed = async function (knex) {
   const artists = await knex('artists')
     .insert([
       {
-        userId: userMap['artist@beatbloom.com'].id,
+        userId: userMap['artist@EasyBeats.com'].id,
         displayName: 'Test Artist',
         bio: 'Up-and-coming artist looking for the perfect sound.',
         avatar: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=80',
@@ -265,9 +265,9 @@ export const seed = async function (knex) {
   const admins = await knex('admins')
     .insert([
       {
-        userId: userMap['admin@beatbloom.com'].id,
+        userId: userMap['admin@EasyBeats.com'].id,
         displayName: 'Admin User',
-        bio: 'System administrator for BeatBloom.',
+        bio: 'System administrator for EasyBeats.',
         avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
       },
     ])
@@ -894,7 +894,7 @@ export const seed = async function (knex) {
   // ==========================================
   // 6. PLAYLISTS
   // ==========================================
-  const artistUser = userMap['artist@beatbloom.com'];
+  const artistUser = userMap['artist@EasyBeats.com'];
 
   const playlists = await knex('playlists')
     .insert([
@@ -957,9 +957,9 @@ export const seed = async function (knex) {
     { userId: artistUser.id, beatId: beats[14].id },
     { userId: artistUser.id, beatId: beats[18].id },
     { userId: artistUser.id, beatId: beats[20].id },
-    { userId: userMap['cloudnine@beatbloom.com'].id, beatId: beats[5].id },
-    { userId: userMap['synthwave@beatbloom.com'].id, beatId: beats[0].id },
-    { userId: userMap['urbanflow@beatbloom.com'].id, beatId: beats[14].id },
+    { userId: userMap['cloudnine@EasyBeats.com'].id, beatId: beats[5].id },
+    { userId: userMap['synthwave@EasyBeats.com'].id, beatId: beats[0].id },
+    { userId: userMap['urbanflow@EasyBeats.com'].id, beatId: beats[14].id },
   ];
 
   await knex('likes').insert(likes);
@@ -972,8 +972,8 @@ export const seed = async function (knex) {
     { followerId: artistUser.id, producerId: producerMap['cloudnine'].id },
     { followerId: artistUser.id, producerId: producerMap['synthwave'].id },
     { followerId: artistUser.id, producerId: producerMap['shadow'].id },
-    { followerId: userMap['cloudnine@beatbloom.com'].id, producerId: producerMap['synthwave'].id },
-    { followerId: userMap['synthwave@beatbloom.com'].id, producerId: producerMap['shadow'].id },
+    { followerId: userMap['cloudnine@EasyBeats.com'].id, producerId: producerMap['synthwave'].id },
+    { followerId: userMap['synthwave@EasyBeats.com'].id, producerId: producerMap['shadow'].id },
   ];
 
   await knex('follows').insert(follows);
@@ -1208,7 +1208,7 @@ export const seed = async function (knex) {
   // ==========================================
   await knex('notifications').insert([
     {
-      userId: userMap['cloudnine@beatbloom.com'].id,
+      userId: userMap['cloudnine@EasyBeats.com'].id,
       type: 'newSale',
       title: 'New Sale!',
       message: 'Someone purchased "Midnight Dreams" for $29.99',
@@ -1217,7 +1217,7 @@ export const seed = async function (knex) {
       readAt: new Date(),
     },
     {
-      userId: userMap['synthwave@beatbloom.com'].id,
+      userId: userMap['synthwave@EasyBeats.com'].id,
       type: 'newFollower',
       title: 'New Follower',
       message: 'Test Artist started following you',
@@ -1227,7 +1227,7 @@ export const seed = async function (knex) {
     {
       userId: artistUser.id,
       type: 'systemAlert',
-      title: 'Welcome to BeatBloom!',
+      title: 'Welcome to EasyBeats!',
       message: 'Start discovering amazing beats from top producers.',
       data: JSON.stringify({}),
       isRead: true,
