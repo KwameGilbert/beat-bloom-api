@@ -9,7 +9,7 @@ import { NotFoundError } from '../utils/errors.js';
  * Helper to resolve the authenticated user to a producer record
  */
 async function getProducerIdFromUser(userId) {
-  const producer = await ProducerModel.findByUserId(userId);
+  const producer = await ProducerModel.findByUserIdOrCreate(userId);
   if (!producer) {
     throw new NotFoundError('Producer profile not found');
   }

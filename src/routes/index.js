@@ -85,7 +85,5 @@ apiRouter.use('/payments', paymentRoutes);
 
 // Mount API routes
 router.use('/', apiRouter);
-router.use('/api', apiRouter);
-router.use('/api/v1', apiRouter);
 
 export default router;

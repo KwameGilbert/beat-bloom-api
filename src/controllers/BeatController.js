@@ -73,7 +73,7 @@ export const BeatController = {
    * Create new beat
    */
   create: asyncHandler(async (req, res) => {
-    const producer = await ProducerModel.findByUserId(req.user.id);
+    const producer = await ProducerModel.findByUserIdOrCreate(req.user.id);
     if (!producer) {
       throw new NotFoundError('Producer profile not found');
     }
@@ -85,7 +85,7 @@ export const BeatController = {
    * Get authenticated producer's beat catalog
    */
   getMyBeats: asyncHandler(async (req, res) => {
-    const producer = await ProducerModel.findByUserId(req.user.id);
+    const producer = await ProducerModel.findByUserIdOrCreate(req.user.id);
     if (!producer) {
       throw new NotFoundError('Producer profile not found');
     }
@@ -98,7 +98,7 @@ export const BeatController = {
    */
   update: asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const producer = await ProducerModel.findByUserId(req.user.id);
+    const producer = await ProducerModel.findByUserIdOrCreate(req.user.id);
     if (!producer) {
       throw new NotFoundError('Producer profile not found');
     }
@@ -111,7 +111,7 @@ export const BeatController = {
    */
   delete: asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const producer = await ProducerModel.findByUserId(req.user.id);
+    const producer = await ProducerModel.findByUserIdOrCreate(req.user.id);
     if (!producer) {
       throw new NotFoundError('Producer profile not found');
     }

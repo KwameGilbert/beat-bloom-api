@@ -69,6 +69,8 @@ const createApp = () => {
 
   // Mount routes
   app.use(routes);
+  app.use('/api', routes);
+  app.use('/api/v1', routes);
 
   // Root endpoint
   app.get('/', (req, res) => {
