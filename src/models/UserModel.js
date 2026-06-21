@@ -22,10 +22,14 @@ class UserModelClass extends BaseModel {
   }
 
   /**
-   * Create user with hashed password
+   * Create user with hashed password and lowercase email
    */
   async create(data) {
     const userData = { ...data };
+
+    if (userData.email) {
+      userData.email = userData.email.toLowerCase();
+    }
 
     if (userData.password) {
       userData.password = await this.hashPassword(userData.password);
@@ -35,10 +39,14 @@ class UserModelClass extends BaseModel {
   }
 
   /**
-   * Update user with optional password hashing
+   * Update user with optional password hashing and lowercase email
    */
   async update(id, data) {
     const userData = { ...data };
+
+    if (userData.email) {
+      userData.email = userData.email.toLowerCase();
+    }
 
     if (userData.password) {
       userData.password = await this.hashPassword(userData.password);

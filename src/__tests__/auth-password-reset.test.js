@@ -10,7 +10,7 @@
 
 import request from 'supertest';
 import { app } from '../app.js';
-import { db } from '../database/connection.js';
+import { db } from '../config/database.js';
 import { clearDatabase, createTestUser, setupTests, teardownTests } from './setup.js';
 
 const API_BASE = '/api/v1/auth';

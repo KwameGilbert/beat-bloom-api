@@ -130,7 +130,7 @@ describe('User Management API (Admin)', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(1);
-      expect(res.body.data[0].email).toBe('searchme@EasyBeats.com');
+      expect(res.body.data[0].email).toBe('searchme@easybeats.com');
     });
 
     it('should paginate results', async () => {
@@ -168,7 +168,7 @@ describe('User Management API (Admin)', () => {
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.email).toBe('newuser@EasyBeats.com');
+      expect(res.body.data.email).toBe('newuser@easybeats.com');
       expect(res.body.data.name).toBe('New User');
       expect(res.body.data.password).toBeUndefined();
     });
@@ -216,7 +216,7 @@ describe('User Management API (Admin)', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe(user.id);
-      expect(res.body.data.email).toBe('getuser@EasyBeats.com');
+      expect(res.body.data.email).toBe('getuser@easybeats.com');
     });
 
     it('should return 404 for non-existent user', async () => {

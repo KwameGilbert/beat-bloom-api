@@ -46,19 +46,23 @@ export const CartService = {
 
     const items = await query.orderBy('cartItems.createdAt', 'desc');
 
-    // Calculate subtotal
+    // Calculate subtotal (raw costs set by producers)
     const subtotal = items.reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
 
     // Get fee settings and calculate fees
     const feeSettings = await PlatformSettingsService.getFeeSettings();
-    const processingFee =
-      Math.round(
-        ((subtotal * feeSettings.processingFeePercentage) / 100 + feeSettings.processingFeeFixed) *
-          100
-      ) / 100;
     const platformFee =
       Math.round(((subtotal * feeSettings.platformCommissionRate) / 100) * 100) / 100;
-    const total = Math.round((subtotal + processingFee) * 100) / 100;
+    
+    // Processing fee is calculated on (subtotal + platformFee)
+    const processingFee =
+      Math.round(
+        (((subtotal + platformFee) * feeSettings.processingFeePercentage) / 100 + feeSettings.processingFeeFixed) *
+          100
+      ) / 100;
+      
+    // Total cost to the buyer includes raw cost, platform fee, and processing fee
+    const total = Math.round((subtotal + platformFee + processingFee) * 100) / 100;
 
     return {
       items,

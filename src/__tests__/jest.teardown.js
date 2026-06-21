@@ -2,7 +2,7 @@
  * Jest Teardown - runs after all test files complete
  */
 
-import { db } from '../database/connection.js';
+import { db } from '../config/database.js';
 
 export default async () => {
   try {

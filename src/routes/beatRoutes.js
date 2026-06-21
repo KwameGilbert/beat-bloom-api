@@ -17,10 +17,28 @@ router.get('/', BeatController.list);
 router.get('/trending', BeatController.trending);
 
 /**
+ * @route GET /api/beats/my-beats
+ * @desc Get authenticated producer's beats
+ */
+router.get('/my-beats', authenticate, requireProducer, BeatController.getMyBeats);
+
+/**
  * @route GET /api/beats/:id
  * @desc Get beat details (optionalAuth to check exclusive ownership)
  */
 router.get('/:id', optionalAuth, BeatController.get);
+
+/**
+ * @route PUT /api/beats/:id
+ * @desc Update a beat details (Producer only)
+ */
+router.put('/:id', authenticate, requireProducer, BeatController.update);
+
+/**
+ * @route DELETE /api/beats/:id
+ * @desc Soft delete a beat (Producer only)
+ */
+router.delete('/:id', authenticate, requireProducer, BeatController.delete);
 
 /**
  * @route POST /api/beats/:id/play

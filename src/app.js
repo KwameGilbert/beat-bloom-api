@@ -75,7 +75,7 @@ const createApp = () => {
     res.json({
       success: true,
       message: `Welcome to ${env.APP_NAME}`,
-      documentation: '/api/docs',
+      documentation: '/docs',
     });
   });
 

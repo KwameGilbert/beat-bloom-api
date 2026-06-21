@@ -7,9 +7,10 @@
  * - Authentication helpers for protected routes
  */
 
-import { db } from '../database/connection.js';
+import { db } from '../config/database.js';
 import { UserModel } from '../models/UserModel.js';
 import { generateTokens } from '../middlewares/auth.js';
+import { tokenService } from '../services/TokenService.js';
 
 /**
  * Clear all test data from the database
@@ -81,6 +82,10 @@ export const createAuthenticatedUser = async (overrides = {}) => {
     email: user.email,
     role: user.role,
   });
+
+  if (tokens.refreshToken) {
+    await tokenService.storeRefreshToken(user.id, tokens.refreshToken);
+  }
 
   return {
     user,

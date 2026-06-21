@@ -53,7 +53,7 @@ describe('Auth API', () => {
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
       expect(res.body.data.user).toHaveProperty('id');
-      expect(res.body.data.user.email).toBe('newuser@EasyBeats.com');
+      expect(res.body.data.user.email).toBe('newuser@easybeats.com');
       expect(res.body.data.user.name).toBe('New User');
       expect(res.body.data.user.role).toBe('artist');
       expect(res.body.data.accessToken).toBeDefined();
@@ -142,7 +142,7 @@ describe('Auth API', () => {
       expect(res.body.data.accessToken).toBeDefined();
       expect(res.body.data.refreshToken).toBeDefined();
       expect(res.body.data.user.id).toBe(user.id);
-      expect(res.body.data.user.email).toBe('login@EasyBeats.com');
+      expect(res.body.data.user.email).toBe('login@easybeats.com');
     });
 
     it('should be case-insensitive for email', async () => {
@@ -218,7 +218,7 @@ describe('Auth API', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.id).toBe(user.id);
-      expect(res.body.data.email).toBe('profile@EasyBeats.com');
+      expect(res.body.data.email).toBe('profile@easybeats.com');
       expect(res.body.data.name).toBe('Profile User');
       expect(res.body.data.password).toBeUndefined();
     });

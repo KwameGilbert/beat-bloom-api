@@ -65,7 +65,7 @@ export class ConflictError extends ApiError {
  */
 export class ValidationError extends ApiError {
   constructor(message = 'Validation failed', errors = null) {
-    super(StatusCodes.UNPROCESSABLE_ENTITY, message, errors);
+    super(StatusCodes.BAD_REQUEST, message, errors);
   }
 }
 

@@ -47,11 +47,12 @@ export const OrderService = {
           );
         }
 
-        const price = parseFloat(tier.price);
+        const rawCost = parseFloat(tier.price);
+        const platformFee = (rawCost * platformCommissionRate) / 100;
+        const price = rawCost + platformFee; // Cost to buyer is raw cost + platform fee
         subtotal += price;
 
-        const platformFee = (price * platformCommissionRate) / 100;
-        const producerEarnings = price - platformFee;
+        const producerEarnings = rawCost; // Producer gets 100% of the raw cost
 
         preparedItems.push({
           beatId: beat.id,
@@ -59,14 +60,14 @@ export const OrderService = {
           producerId: beat.producerId,
           beatTitle: beat.title,
           licenseName: tier.name,
-          price,
+          price, // Stored in database as the buyer item price
           platformFee,
           producerEarnings,
           isExclusive: tier.isExclusive,
         });
       }
 
-      // Calculate final totals
+      // Calculate final totals (subtotal already includes rawCost + platformFee)
       const processingFee =
         Math.round(
           ((subtotal * feeSettings.processingFeePercentage) / 100 +

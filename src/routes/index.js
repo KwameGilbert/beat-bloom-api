@@ -8,6 +8,7 @@ import healthRoutes from './healthRoutes.js';
 import docsRoutes from './docsRoutes.js';
 import beatRoutes from './beatRoutes.js';
 import producerRoutes from './producerRoutes.js';
+import payoutRoutes from './payoutRoutes.js';
 import genreRoutes from './genreRoutes.js';
 import activityRoutes from './activityRoutes.js';
 import playlistRoutes from './playlistRoutes.js';
@@ -52,6 +53,9 @@ apiRouter.use('/beats', beatRoutes);
 // Producer routes
 apiRouter.use('/producers', producerRoutes);
 
+// Payout routes
+apiRouter.use('/payouts', payoutRoutes);
+
 // Genre routes
 apiRouter.use('/genres', genreRoutes);
 
@@ -80,6 +84,8 @@ apiRouter.use('/pages', pageRoutes);
 apiRouter.use('/payments', paymentRoutes);
 
 // Mount API routes
+router.use('/', apiRouter);
 router.use('/api', apiRouter);
+router.use('/api/v1', apiRouter);
 
 export default router;

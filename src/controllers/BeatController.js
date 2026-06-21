@@ -1,6 +1,8 @@
 import { BeatService } from '../services/BeatService.js';
+import { ProducerModelInstance as ProducerModel } from '../models/ProducerModel.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { successResponse } from '../utils/response.js';
+import { NotFoundError } from '../utils/errors.js';
 
 /**
  * Beat Controller
@@ -71,10 +73,50 @@ export const BeatController = {
    * Create new beat
    */
   create: asyncHandler(async (req, res) => {
-    const producerId = req.user.id; // Assuming userId is producerId or linked
-    // We might need to find the producer record if producerId != userId
-    const beat = await BeatService.createBeat(producerId, req.body);
+    const producer = await ProducerModel.findByUserId(req.user.id);
+    if (!producer) {
+      throw new NotFoundError('Producer profile not found');
+    }
+    const beat = await BeatService.createBeat(producer.id, req.body);
     return successResponse(res, beat, 'Beat created successfully', {}, 201);
+  }),
+
+  /**
+   * Get authenticated producer's beat catalog
+   */
+  getMyBeats: asyncHandler(async (req, res) => {
+    const producer = await ProducerModel.findByUserId(req.user.id);
+    if (!producer) {
+      throw new NotFoundError('Producer profile not found');
+    }
+    const beats = await BeatService.getProducerCatalog(producer.id);
+    return successResponse(res, beats, 'Producer beats retrieved successfully');
+  }),
+
+  /**
+   * Update beat details (Producer only)
+   */
+  update: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const producer = await ProducerModel.findByUserId(req.user.id);
+    if (!producer) {
+      throw new NotFoundError('Producer profile not found');
+    }
+    const beat = await BeatService.updateBeat(id, producer.id, req.body);
+    return successResponse(res, beat, 'Beat updated successfully');
+  }),
+
+  /**
+   * Soft delete a beat (Producer only)
+   */
+  delete: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const producer = await ProducerModel.findByUserId(req.user.id);
+    if (!producer) {
+      throw new NotFoundError('Producer profile not found');
+    }
+    await BeatService.deleteBeat(id, producer.id);
+    return successResponse(res, null, 'Beat deleted successfully');
   }),
 };
 

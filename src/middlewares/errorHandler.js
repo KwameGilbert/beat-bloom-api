@@ -51,9 +51,9 @@ export const errorHandler = (err, req, res, _next) => {
 
   // Handle specific error types
   if (err.name === 'ZodError') {
-    statusCode = StatusCodes.UNPROCESSABLE_ENTITY;
+    statusCode = StatusCodes.BAD_REQUEST;
     message = 'Validation failed';
-    errors = err.errors.map((e) => ({
+    errors = (err.errors || err.issues || []).map((e) => ({
       field: e.path.join('.'),
       message: e.message,
     }));

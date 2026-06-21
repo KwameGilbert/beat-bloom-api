@@ -6,6 +6,17 @@ import { successResponse } from '../utils/response.js';
 import { NotFoundError } from '../utils/errors.js';
 
 /**
+ * Helper to resolve the authenticated user to a producer record
+ */
+async function getProducerIdFromUser(userId) {
+  const producer = await ProducerModel.findByUserId(userId);
+  if (!producer) {
+    throw new NotFoundError('Producer profile not found');
+  }
+  return producer.id;
+}
+
+/**
  * Producer Controller
  */
 export const ProducerController = {
@@ -61,16 +72,35 @@ export const ProducerController = {
    * Get producer earnings and stats
    */
   getStats: asyncHandler(async (req, res) => {
-    const producerId = req.user.id;
+    const producerId = await getProducerIdFromUser(req.user.id);
     const stats = await ProducerService.getDashboardStats(producerId);
     return successResponse(res, stats, 'Producer stats retrieved successfully');
+  }),
+
+  /**
+   * Get dashboard overview datasets (stats, recent sales, top beats, charts)
+   */
+  getDashboardOverview: asyncHandler(async (req, res) => {
+    const producerId = await getProducerIdFromUser(req.user.id);
+    const overview = await ProducerService.getDashboardOverview(producerId);
+    return successResponse(res, overview, 'Producer dashboard overview retrieved successfully');
+  }),
+
+  /**
+   * Get detailed sales item list (Sales page ledger)
+   */
+  getSalesList: asyncHandler(async (req, res) => {
+    const producerId = await getProducerIdFromUser(req.user.id);
+    const { search } = req.query;
+    const sales = await ProducerService.getSalesList(producerId, { search });
+    return successResponse(res, sales, 'Producer sales list retrieved successfully');
   }),
 
   /**
    * Get payout methods
    */
   getPayoutMethods: asyncHandler(async (req, res) => {
-    const producerId = req.user.id;
+    const producerId = await getProducerIdFromUser(req.user.id);
     const methods = await ProducerService.getPayoutMethods(producerId);
     return successResponse(res, methods, 'Payout methods retrieved successfully');
   }),
@@ -79,7 +109,7 @@ export const ProducerController = {
    * Add payout method
    */
   addPayoutMethod: asyncHandler(async (req, res) => {
-    const producerId = req.user.id;
+    const producerId = await getProducerIdFromUser(req.user.id);
     const method = await ProducerService.addPayoutMethod(producerId, req.body);
     return successResponse(res, method, 'Payout method added successfully', {}, 201);
   }),
@@ -89,10 +119,29 @@ export const ProducerController = {
    */
   deletePayoutMethod: asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const producerId = req.user.id;
+    const producerId = await getProducerIdFromUser(req.user.id);
     await ProducerService.deletePayoutMethod(producerId, id);
     return successResponse(res, null, 'Payout method deleted successfully');
+  }),
+
+  /**
+   * Get payout history
+   */
+  getPayoutHistory: asyncHandler(async (req, res) => {
+    const producerId = await getProducerIdFromUser(req.user.id);
+    const history = await ProducerService.getPayoutHistory(producerId);
+    return successResponse(res, history, 'Payout history retrieved successfully');
+  }),
+
+  /**
+   * Request manual payout/withdrawal
+   */
+  requestWithdrawal: asyncHandler(async (req, res) => {
+    const producerId = await getProducerIdFromUser(req.user.id);
+    const payout = await ProducerService.requestPayout(producerId, req.body);
+    return successResponse(res, payout, 'Payout request submitted successfully', {}, 201);
   }),
 };
 
 export default ProducerController;
+

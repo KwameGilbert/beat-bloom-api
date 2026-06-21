@@ -50,6 +50,13 @@ export class ApiResponse {
   }
 
   /**
+   * Bad request response (400)
+   */
+  static badRequest(res, message, errors = null) {
+    return this.error(res, message, StatusCodes.BAD_REQUEST, errors);
+  }
+
+  /**
    * Error response
    */
   static error(res, message, statusCode = StatusCodes.INTERNAL_SERVER_ERROR, errors = null) {
