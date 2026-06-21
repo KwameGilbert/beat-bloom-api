@@ -30,7 +30,13 @@ export const validate = (schema) => {
 
       // Assign validated data back to request
       results.forEach((result, index) => {
-        req[validationTargets[index]] = result;
+        const target = validationTargets[index];
+        Object.defineProperty(req, target, {
+          value: result,
+          writable: true,
+          configurable: true,
+          enumerable: true
+        });
       });
 
       next();
