@@ -28,6 +28,12 @@ router.get(
 router.get('/dashboard/sales', authenticate, requireProducer, ProducerController.getSalesList);
 
 /**
+ * @route GET /api/producers/dashboard/stats
+ * @desc Get producer earnings and stats (authenticated)
+ */
+router.get('/dashboard/stats', authenticate, requireProducer, ProducerController.getStats);
+
+/**
  * @route GET /api/producers/:username
  * @desc Get producer profile and their beats
  */
